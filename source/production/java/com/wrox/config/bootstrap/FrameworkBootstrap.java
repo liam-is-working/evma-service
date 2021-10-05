@@ -2,6 +2,7 @@ package com.wrox.config.bootstrap;
 
 import com.wrox.config.RestServletContextConfiguration;
 import com.wrox.config.RootContextConfiguration;
+import com.wrox.site.CorsFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.Order;
@@ -10,9 +11,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
+import javax.servlet.*;
 
 @SuppressWarnings("unused")
 @Order(1)
@@ -39,6 +38,11 @@ public class FrameworkBootstrap implements WebApplicationInitializer
         );
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/api/*");
+
+        FilterRegistration.Dynamic registration = container.addFilter(
+                "CorsFilter", new CorsFilter()
+        );
+        registration.addMappingForUrlPatterns(null, false, "/*");
 
 //        AnnotationConfigWebApplicationContext restContext =
 //                new AnnotationConfigWebApplicationContext();

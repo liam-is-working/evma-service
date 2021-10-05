@@ -1,6 +1,7 @@
 package com.wrox.config;
 
 
+import com.wrox.site.CorsFilter;
 import com.wrox.site.services.UserPrincipalService;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.inject.Inject;
+import java.util.logging.Filter;
 
 @Configuration
 @EnableWebMvcSecurity
@@ -34,6 +36,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
     {
         return new SessionRegistryImpl();
     }
+
 
     @Bean
     @Override

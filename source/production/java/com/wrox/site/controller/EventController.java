@@ -1,8 +1,10 @@
 package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
+import com.wrox.site.entities.Category;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.UserPrincipal;
+import com.wrox.site.services.CategoryService;
 import com.wrox.site.services.EventService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,8 @@ public class EventController {
 
     @Inject
     EventService eventService;
+    @Inject
+    CategoryService categoryService;
 
     @RequestMapping(value = "events", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> fetchAll(@PageableDefault(page = 0, size = 5) Pageable page){
@@ -63,8 +67,12 @@ public class EventController {
         return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
     }
 
+    @RequestMapping(value = "events/categories", method = RequestMethod.GET)
+    public ResponseEntity<List<Category>> getCategories(){
+        return new ResponseEntity<>(categoryService.getAll(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.PUT)
-    @PreAuthorize("hasAnyRole('Event Organizer')")
     public ResponseEntity<Event> edit(@RequestBody EventForm eventForm, @PathVariable long eventId,
                                       @AuthenticationPrincipal UserPrincipal userPrincipal){
         Event editedEvent = eventService.getEventDetail(eventId);

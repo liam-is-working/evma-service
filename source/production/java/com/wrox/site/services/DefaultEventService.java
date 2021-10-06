@@ -47,10 +47,14 @@ public class DefaultEventService implements EventService{
     public Event saveEvent(Event event, Set<Long> categoryIds, int statusId) {
         Set<Category> categories = new HashSet<>();
         for (long id : categoryIds){
-            categories.add(category.findOne(id));
+            Category cat = category.findOne(id);
+            if(cat!=null)
+                categories.add(cat);
         }
         EventStatus eventStatus = status.findOne(statusId);
-        event.setCategories(categories);
+        if(categories.size() != 0){
+            event.setCategories(categories);
+        }
         event.setStatus(eventStatus);
         events.save(event);
         if(event.getCoverURL() == null){

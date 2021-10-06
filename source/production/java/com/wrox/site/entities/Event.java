@@ -41,7 +41,7 @@ public class Event implements Serializable {
     private Instant startDate;
     private Instant endDate;
 
-    @NotNull
+   // @NotNull
     private EventStatus status;
 
     private String coverURL;

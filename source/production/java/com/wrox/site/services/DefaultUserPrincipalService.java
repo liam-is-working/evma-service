@@ -68,8 +68,6 @@ public class DefaultUserPrincipalService implements UserPrincipalService{
                 principal.setAuthorities(roles);
             }
         }
-
-
         this.userRepository.save(principal);
     }
 

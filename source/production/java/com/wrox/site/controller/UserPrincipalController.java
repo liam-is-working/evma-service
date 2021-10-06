@@ -7,6 +7,8 @@ import com.wrox.site.services.JwtTokenProvider;
 import com.wrox.site.services.ProfileService;
 import com.wrox.site.services.RoleService;
 import com.wrox.site.services.UserPrincipalService;
+import com.wrox.site.validation.Email;
+import com.wrox.site.validation.NotBlank;
 import javafx.geometry.Pos;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,9 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 
@@ -153,11 +158,22 @@ public class UserPrincipalController
     }
 
     public static class SignupForm{
+        @NotBlank
+        @NotNull
         public String signUsername;
+        @NotBlank
+        @NotNull
         public String signPassword;
+        @NotBlank
+        @NotNull
         public String role;
+        @NotBlank
+        @NotNull
         public String name;
+        @Email
+        @NotNull
         public String email;
+        @NotNull
         public Instant DOB;
 
         public SignupForm() {

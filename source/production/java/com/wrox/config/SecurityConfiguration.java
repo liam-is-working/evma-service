@@ -61,11 +61,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 //                .eraseCredentials(true);
     }
 
-    @Override
-    public void configure(WebSecurity security)
-    {
-        security.ignoring().antMatchers("/api/*");
-    }
+//    @Override
+//    public void configure(WebSecurity security)
+//    {
+//        security.ignoring().antMatchers("/api/*");
+//    }
 
     @Override
     protected void configure(HttpSecurity security) throws Exception

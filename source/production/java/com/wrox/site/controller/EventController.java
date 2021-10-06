@@ -3,26 +3,20 @@ package com.wrox.site.controller;
 import com.wrox.config.annotation.RestEndpoint;
 import com.wrox.exception.ResourceNotFoundException;
 import com.wrox.site.entities.*;
-import com.wrox.site.repositories.UserAuthorityRepository;
 import com.wrox.site.services.CategoryService;
 import com.wrox.site.services.EventService;
-import com.wrox.site.validation.NotBlank;
+import com.wrox.site.services.EventStatusService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.ResourceAccessException;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -35,26 +29,33 @@ public class EventController {
     @Inject
     CategoryService categoryService;
     @Inject
-    UserAuthorityRepository authorityRepository;
+    EventStatusService eventStatusService;
 
     @RequestMapping(value = "events", method = RequestMethod.GET)
-    public ResponseEntity<PageEntity<Event>> fetchAll(@PageableDefault(page = 0, size = 5) Pageable page){
-        Page<Event> eventPage = eventService.getEvents(page);
+    public ResponseEntity<PageEntity<Event>> fetchPublished(@PageableDefault(page = 0, size = 5) Pageable page){
+        Page<Event> eventPage = eventService.getPublishedEvent(page);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
 
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.GET)
-    public ResponseEntity<Event> fetchById(@PathVariable long eventId){
+    public ResponseEntity<Event> fetchById(@PathVariable long eventId,
+                                           @AuthenticationPrincipal UserPrincipal principal){
         Event event = eventService.getEventDetail(eventId);
         if (event==null)
             throw new ResourceNotFoundException();
+        if(!"Published".equals(event.getStatus().getName())){
+            if(principal==null ||
+                    (principal.getId()!=event.getUserProfileId()&&
+                            principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
+                return new ResponseEntity<>(null,HttpStatus.FORBIDDEN);
+        }
         return new ResponseEntity<>(eventService.getEventDetail(eventId), HttpStatus.OK);
     }
 
     @RequestMapping(value = "events/byOrganizer/{organizerId}", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> fetchByOrganizer(@PathVariable long organizerId,
                                                               @PageableDefault(page = 0, size = 5) Pageable page){
-        Page<Event> eventPage = eventService.getEvents(organizerId, page);
+        Page<Event> eventPage = eventService.getPublishedEvent(organizerId, page);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
 
@@ -65,7 +66,7 @@ public class EventController {
                                         ) {
         //Authorize
         if (principal == null ||
-                !principal.getAuthorities().stream().anyMatch(r -> "Event Organizer".equals(r.getAuthority()))) {
+                principal.getAuthorities().stream().noneMatch(r -> "Event Organizer".equals(r.getAuthority()))) {
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
         //Validation
@@ -90,6 +91,11 @@ public class EventController {
     @RequestMapping(value = "events/categories", method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getCategories(){
         return new ResponseEntity<>(categoryService.getAll(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "events/status", method = RequestMethod.GET)
+    public ResponseEntity<List<EventStatus>> getStatus(){
+        return new ResponseEntity<>(eventStatusService.getStatus(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.PUT)
@@ -119,6 +125,49 @@ public class EventController {
         return new ResponseEntity<>(editedEvent, HttpStatus.ACCEPTED);
     }
 
+    @RequestMapping(value = "events/{eventId}", method = RequestMethod.PATCH)
+    public ResponseEntity changeEventStatus(@RequestBody eventStatusForm form,
+                                            @PathVariable long eventId,
+                                            @AuthenticationPrincipal UserPrincipal principal){
+        //get event
+        Event event = eventService.getEventDetail(eventId);
+        if(event == null)
+            throw new ResourceNotFoundException();
+        //authorize
+        if(principal==null ||
+                (principal.getId()!=event.getUserProfileId()&&
+                        principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+
+        eventService.saveEvent(event,null,form.getStatusId());
+        return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(value = "events/byOrganizer/{organizerId}/{statusName}")
+    public ResponseEntity<PageEntity<Event>> getEventByStatus(@PathVariable(value = "organizerId") long organizerId,
+                                                              @PathVariable(value = "statusName") String statusName,
+                                                              @PageableDefault Pageable p,
+                                                              @AuthenticationPrincipal UserPrincipal principal){
+        if(principal==null || (principal.getId() != organizerId &&
+        principal.getAuthorities().stream().anyMatch(r -> "Admin".equals(r.getAuthority()))))
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
+
+        Page<Event> eventPage = eventService.getEventByStatus(statusName,organizerId,p);
+        return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
+    }
+
+    public static class eventStatusForm{
+        int statusId;
+
+        public int getStatusId() {
+            return statusId;
+        }
+
+        public void setStatusId(int statusId) {
+            this.statusId = statusId;
+        }
+    }
 
     public static class EventForm{
 

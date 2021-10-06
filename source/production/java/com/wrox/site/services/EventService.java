@@ -11,8 +11,9 @@ import java.util.Set;
 
 @Validated
 public interface EventService {
-     Page<Event> getEvents(Pageable page);
+     Page<Event> getPublishedEvent(Pageable page);
      Event getEventDetail(long eventId);
      Event saveEvent(@Valid Event event, Set<Long> categories, int status);
-     Page<Event> getEvents(long ownerId, Pageable p);
+     Page<Event> getPublishedEvent(long ownerId, Pageable p);
+     Page<Event> getEventByStatus(String statusName,long ownerId, Pageable p);
 }

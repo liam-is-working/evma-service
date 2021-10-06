@@ -7,6 +7,7 @@ import com.wrox.site.repositories.CategoryRepository;
 import com.wrox.site.repositories.EventRepository;
 import com.wrox.site.repositories.EventStatusRepository;
 import com.wrox.site.repositories.UserProfileRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,8 +33,8 @@ public class DefaultEventService implements EventService{
 
     @Override
     @Transactional
-    public Page<Event> getEvents(Pageable page) {
-        return events.findAll(page);
+    public Page<Event> getPublishedEvent(Pageable page) {
+        return events.getEventByStatus(status.findEventStatusByName("Published"), page);
     }
 
     @Override
@@ -46,15 +47,19 @@ public class DefaultEventService implements EventService{
     @Transactional
     public Event saveEvent(Event event, Set<Long> categoryIds, int statusId) {
         Set<Category> categories = new HashSet<>();
-        for (long id : categoryIds){
-            Category cat = category.findOne(id);
-            if(cat!=null)
-                categories.add(cat);
+        if(categoryIds!=null){
+            for (long id : categoryIds){
+                Category cat = category.findOne(id);
+                if(cat!=null)
+                    categories.add(cat);
+            }
         }
-        EventStatus eventStatus = status.findOne(statusId);
+
         if(categories.size() != 0){
             event.setCategories(categories);
         }
+
+        EventStatus eventStatus = status.findOne(statusId);
         event.setStatus(eventStatus);
         events.save(event);
         if(event.getCoverURL() == null){
@@ -65,8 +70,17 @@ public class DefaultEventService implements EventService{
 
     @Override
     @Transactional
-    public Page<Event> getEvents(long ownerId, Pageable p) {
-        return events.getEventByUserProfileId(ownerId, p);
+    public Page<Event> getPublishedEvent(long ownerId, Pageable p) {
+        return events.getEventByStatusAndUserProfileId(status.findEventStatusByName("Published"),ownerId, p);
+    }
+
+    @Override
+    public Page<Event> getEventByStatus(String statusName,long ownerId, Pageable p) {
+        EventStatus s = status.findEventStatusByName(statusName);
+        if(s == null)
+            throw new DataIntegrityViolationException("");
+
+        return events.getEventByStatusAndUserProfileId(s,ownerId,p);
     }
 
 

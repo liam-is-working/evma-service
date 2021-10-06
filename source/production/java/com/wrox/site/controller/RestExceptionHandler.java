@@ -1,12 +1,14 @@
-package com.wrox.exception;
+package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpointAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,15 @@ public class RestExceptionHandler {
         }
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler({DataIntegrityViolationException.class})
+    public ResponseEntity<ErrorItem> handle(DataIntegrityViolationException e){
+        ErrorItem item = new ErrorItem();
+        item.setMessage("Data integrity violation");
+        //item.setCode(e.get);
+        return new ResponseEntity<>(item, HttpStatus.BAD_REQUEST);
+    }
+
     public static class ErrorItem
     {
         private String code;

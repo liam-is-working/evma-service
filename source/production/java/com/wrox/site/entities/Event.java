@@ -21,7 +21,7 @@ import java.util.Set;
         setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Event implements Serializable {
     private long id;
-    @Size(max = 50)
+    @Size(max = 50, message = "title size <= 50")
     private String title;
 
 
@@ -33,11 +33,12 @@ public class Event implements Serializable {
 
     private long userProfileId;
 
-    @NotNull
+    @NotNull(message = "online must not be null")
     private boolean online;
 
     private Set<Address> addresses;
 
+    @NotNull(message = "Start date must not be null")
     private Instant startDate;
     private Instant endDate;
 
@@ -45,9 +46,9 @@ public class Event implements Serializable {
     private EventStatus status;
 
     private String coverURL;
-    @Size(max = 140)
+    @Size(max = 140, message = "summary < 140")
     private String summary;
-    @Size(max = 2500)
+    @Size(max = 2500, message = "content < 25000")
     private String content;
 
     public Event(){}

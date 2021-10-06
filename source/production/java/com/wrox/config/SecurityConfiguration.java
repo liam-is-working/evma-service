@@ -25,10 +25,6 @@ import java.util.logging.Filter;
 
 @Configuration
 @EnableWebMvcSecurity
-//@EnableGlobalMethodSecurity(
-//        prePostEnabled = true, order = 0, mode = AdviceMode.PROXY,
-//        proxyTargetClass = false
-//)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
     @Inject

@@ -8,6 +8,7 @@ import com.wrox.site.validation.Address;
 import org.springframework.web.bind.annotation.Mapping;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
@@ -22,34 +23,34 @@ import java.util.List;
 public class UserProfile implements Serializable {
 
     private long id;
-    @NotBlank
-    @Size(min = 1, max = 50)
+    @NotBlank(message = "name not blank")
+    @Size(min = 1, max = 50, message = "name < 50")
     private String name;
 
     //public List<OrganizerFeedback> organizerFeedbacks;
 
-    @Email
-    @NotBlank
+    @Email(message = "invalid email")
+    @NotNull(message = "email must not be null")
     private String email;
 
     private Instant DOB;
 
-    @Size(min =1, max = 50)
+    @Size(min =1, max = 50, message = "city < 50")
     @Name
     private String city;
 
-    @Size(min = 1, max = 25)
+    @Size(min = 1, max = 25, message = "job title < 25")
     @Name
     private String jobTitle;
 
-    @Size(min = 1, max = 50)
-    @Address
+    @Size(min = 1, max = 50, message = "address < 50")
+    @Address(message = "invalid address")
     private String address;
 
-    @PhoneNumber
+    @PhoneNumber(message = "invalid phone number")
     private String phoneNumber;
 
-    @Size(max = 250)
+    @Size(max = 250, message = "summary < 250")
     private String summary;
 
     private String avatarURL;

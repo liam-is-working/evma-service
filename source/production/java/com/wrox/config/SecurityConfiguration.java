@@ -2,6 +2,7 @@ package com.wrox.config;
 
 
 import com.wrox.site.CorsFilter;
+import com.wrox.site.JwtAuthenticationFilter;
 import com.wrox.site.services.UserPrincipalService;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
@@ -11,21 +12,23 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.inject.Inject;
 import java.util.logging.Filter;
 
 @Configuration
 @EnableWebMvcSecurity
-@EnableGlobalMethodSecurity(
-        prePostEnabled = true, order = 0, mode = AdviceMode.PROXY,
-        proxyTargetClass = false
-)
+//@EnableGlobalMethodSecurity(
+//        prePostEnabled = true, order = 0, mode = AdviceMode.PROXY,
+//        proxyTargetClass = false
+//)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
     @Inject
@@ -37,6 +40,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
         return new SessionRegistryImpl();
     }
 
+    @Bean
+    JwtAuthenticationFilter jwtAuthenticationFilter(){return new JwtAuthenticationFilter();}
 
     @Bean
     @Override
@@ -51,9 +56,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
     {
         builder
                 .userDetailsService(this.userService)
-                .passwordEncoder(new BCryptPasswordEncoder())
-                .and()
-                .eraseCredentials(true);
+                .passwordEncoder(new BCryptPasswordEncoder());
+//                .and()
+//                .eraseCredentials(true);
     }
 
     @Override
@@ -66,20 +71,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
     protected void configure(HttpSecurity security) throws Exception
     {
         security.csrf().disable()
-                .authorizeRequests()
-                .and().formLogin()
-                .loginProcessingUrl("/perform_login")
-                .loginPage("/api/login").failureUrl("/api/login?loginFailed")
-                .defaultSuccessUrl("/api/profiles/currentUser",true)
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .permitAll()
-                .and().logout()
-                .logoutUrl("/logout").logoutSuccessUrl("/api/login?loggedOut")
-                .invalidateHttpSession(true).deleteCookies("JSESSIONID")
-                .permitAll()
-                .and().sessionManagement()
-                .maximumSessions(1).maxSessionsPreventsLogin(true)
-                .sessionRegistry(this.sessionRegistryImpl());
+                .authorizeRequests().antMatchers("/").authenticated();
+        security.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EventRepository extends PagingAndSortingRepository<Event, Long> {
-    public Page<Event> getEventByUserProfile(UserProfile userProfile, Pageable p);
+     Page<Event> getEventByUserProfileId(long userProfileId, Pageable p);
 }

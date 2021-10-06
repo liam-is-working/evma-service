@@ -2,16 +2,20 @@ package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
 import com.wrox.config.annotation.WebController;
-import com.wrox.site.entities.EventStatus;
-import com.wrox.site.entities.Post;
-import com.wrox.site.entities.UserPrincipal;
-import com.wrox.site.entities.UserProfile;
+import com.wrox.site.entities.*;
+import com.wrox.site.services.JwtTokenProvider;
 import com.wrox.site.services.ProfileService;
+import com.wrox.site.services.RoleService;
 import com.wrox.site.services.UserPrincipalService;
 import javafx.geometry.Pos;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +36,12 @@ public class UserPrincipalController
     UserPrincipalService userPrincipalService;
     @Inject
     ProfileService profileService;
+    @Inject
+    AuthenticationManager authenticationManager;
+    @Inject
+    JwtTokenProvider tokenProvider;
+    @Inject
+    RoleService roleService;
 
     @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
     public ResponseEntity<Void> changePassword(@RequestParam String newPassword,
@@ -54,8 +64,10 @@ public class UserPrincipalController
         newUser.setAccountNonLocked(true);
         userPrincipalService.saveUser(newUser, signupForm.signPassword, signupForm.role);
 
+
         UserProfile newProfile = new UserProfile();
         newProfile.setId(newUser.getId());
+        newProfile.setRole(roleService.getRole(signupForm.role));
         newProfile.setEmail(signupForm.email);
         newProfile.setName(signupForm.name);
         newProfile.setDOB(signupForm.DOB);
@@ -65,10 +77,67 @@ public class UserPrincipalController
         return new ResponseEntity<>(newUser.getId(),HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public ResponseEntity<Void> login()
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public ResponseEntity<LoginResponse> login(@RequestParam String username, @RequestParam String password)
     {
-        return new ResponseEntity<>(HttpStatus.OK);
+        Authentication authentication = null;
+        try{
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            password
+                    )
+            );
+        }catch (AuthenticationException authenticationException){
+            LoginResponse response = new LoginResponse();
+            response.setStatus("Login fail");
+            return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
+        }
+
+        // Nếu không xảy ra exception tức là thông tin hợp lệ
+        // Set thông tin authentication vào Security Context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Trả về jwt cho người dùng.
+        String jwt = tokenProvider.generateToken((UserPrincipal) authentication.getPrincipal());
+        LoginResponse response = new LoginResponse();
+        response.setStatus("Login success");
+        response.setToken(jwt);
+        response.setUserPrincipal(SecurityContextHolder.getContext().getAuthentication());
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+    }
+
+    public static class LoginResponse{
+        String status;
+        String token;
+        Authentication userPrincipal;
+
+        public Authentication getUserPrincipal() {
+            return userPrincipal;
+        }
+
+        public void setUserPrincipal(Authentication userPrincipal) {
+            this.userPrincipal = userPrincipal;
+        }
+
+        public LoginResponse() {
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
     }
 
     @RequestMapping(value = "/login?loggedOut", method = RequestMethod.GET)

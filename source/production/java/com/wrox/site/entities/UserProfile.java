@@ -76,6 +76,7 @@ public class UserProfile implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "UserAuthorityId")
+    @JsonProperty
     public UserAuthority getRole() {
         return role;
     }

@@ -2,6 +2,7 @@ package com.wrox.site.services;
 
 import com.wrox.site.entities.UserPrincipal;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import javax.validation.Valid;
@@ -15,4 +16,6 @@ public interface UserPrincipalService extends UserDetailsService {
                     UserPrincipal principal,
             String newPassword, String role
     );
+
+    UserDetails loadUserById(Long userId);
 }

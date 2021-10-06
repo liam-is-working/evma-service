@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.Embeddable;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 @JsonAutoDetect(creatorVisibility = JsonAutoDetect.Visibility.NONE,
@@ -12,7 +13,7 @@ import java.io.Serializable;
         getterVisibility = JsonAutoDetect.Visibility.NONE,
         isGetterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class Address implements Serializable {
+public class Address implements Serializable{
     private String name;
     private String fullText;
     private boolean isURL;
@@ -44,5 +45,18 @@ public class Address implements Serializable {
 
     public void setURL(boolean URL) {
         isURL = URL;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Address address = (Address) o;
+        return isURL == address.isURL && Objects.equals(name, address.name) && Objects.equals(fullText, address.fullText);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, fullText, isURL);
     }
 }

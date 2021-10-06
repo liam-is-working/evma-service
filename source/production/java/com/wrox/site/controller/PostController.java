@@ -39,7 +39,7 @@ public class PostController {
     public ResponseEntity<Post> createEventPost(@RequestBody PostForm postForm,
                                                 @AuthenticationPrincipal UserPrincipal principal){
         Event event = eventService.getEventDetail(postForm.eventId);
-        if(principal==null || event==null || event.getUserProfile().getId() != principal.getId()){
+        if(principal==null || event==null || event.getUserProfileId()!= principal.getId()){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         Post newPost = new Post();
@@ -55,7 +55,7 @@ public class PostController {
                                               @AuthenticationPrincipal UserPrincipal principal){
         Post editedPost = postService.getPost(postId);
         Event event = eventService.getEventDetail(editedPost.getEventId());
-        if(principal==null || event==null || event.getUserProfile().getId() != principal.getId()){
+        if(principal==null || event==null || event.getUserProfileId() != principal.getId()){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         editedPost.setCreatedDate(postForm.createdDate);

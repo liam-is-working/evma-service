@@ -7,6 +7,7 @@ import com.wrox.site.repositories.UserPrincipalRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +45,7 @@ public class DefaultUserPrincipalService implements UserPrincipalService{
     @Transactional
     public UserPrincipal loadUserByUsername(String username)
     {
-        UserPrincipal principal = userRepository.getUserPrincipalByUsername(username);
-        return principal;
+        return userRepository.getUserPrincipalByUsername(username);
     }
 
     @Override
@@ -71,5 +71,10 @@ public class DefaultUserPrincipalService implements UserPrincipalService{
 
 
         this.userRepository.save(principal);
+    }
+
+    @Override
+    public UserDetails loadUserById(Long userId) {
+        return userRepository.findOne(userId);
     }
 }

@@ -24,7 +24,6 @@ public class Event implements Serializable {
     @Size(max = 50)
     private String title;
 
-    private UserProfile userProfile;
 
     private Set<Category> categories;
 
@@ -37,7 +36,7 @@ public class Event implements Serializable {
     @NotNull
     private boolean online;
 
-//    private Set<Address> addresses;
+    private Set<Address> addresses;
 
     private Instant startDate;
     private Instant endDate;
@@ -65,6 +64,18 @@ public class Event implements Serializable {
         this.id = id;
     }
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "Event_Address",
+            joinColumns = {@JoinColumn(name = "EventId", referencedColumnName = "EventId")})
+    @JsonProperty
+    public Set<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(Set<Address> addresses) {
+        this.addresses = addresses;
+    }
+
     @JsonProperty
     public long getUserProfileId() {
         return userProfileId;
@@ -74,15 +85,6 @@ public class Event implements Serializable {
         this.userProfileId = userProfileId;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "UserProfileId", referencedColumnName = "UserProfileId")
-    public UserProfile getUserProfile() {
-        return userProfile;
-    }
-
-    public void setUserProfile(UserProfile userProfile) {
-        this.userProfile = userProfile;
-    }
 
     @JsonProperty
     public String getTitle() {

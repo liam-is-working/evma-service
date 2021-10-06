@@ -44,7 +44,7 @@ public class DefaultEventService implements EventService{
 
     @Override
     @Transactional
-    public Event saveEvent(Event event,long ownerId, Set<Long> categoryIds, int statusId) {
+    public Event saveEvent(Event event, Set<Long> categoryIds, int statusId) {
         Set<Category> categories = new HashSet<>();
         for (long id : categoryIds){
             categories.add(category.findOne(id));
@@ -52,10 +52,6 @@ public class DefaultEventService implements EventService{
         EventStatus eventStatus = status.findOne(statusId);
         event.setCategories(categories);
         event.setStatus(eventStatus);
-        if(ownerId !=0){
-            event.setUserProfile(profile.findOne(ownerId));
-        }
-
         events.save(event);
         if(event.getCoverURL() == null){
             event.setCoverURL("EventCover_"+event.getId());
@@ -66,7 +62,7 @@ public class DefaultEventService implements EventService{
     @Override
     @Transactional
     public Page<Event> getEvents(long ownerId, Pageable p) {
-        return events.getEventByUserProfile(profile.findOne(ownerId), p);
+        return events.getEventByUserProfileId(ownerId, p);
     }
 
 

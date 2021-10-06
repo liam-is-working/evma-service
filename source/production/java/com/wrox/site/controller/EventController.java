@@ -1,9 +1,11 @@
 package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
+import com.wrox.site.entities.Address;
 import com.wrox.site.entities.Category;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.UserPrincipal;
+import com.wrox.site.repositories.UserAuthorityRepository;
 import com.wrox.site.services.CategoryService;
 import com.wrox.site.services.EventService;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,8 @@ public class EventController {
     EventService eventService;
     @Inject
     CategoryService categoryService;
+    @Inject
+    UserAuthorityRepository authorityRepository;
 
     @RequestMapping(value = "events", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> fetchAll(@PageableDefault(page = 0, size = 5) Pageable page){
@@ -47,24 +51,46 @@ public class EventController {
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
 
+    //test
+    @RequestMapping(value = "events/test", method = RequestMethod.POST)
+    public ResponseEntity<Event> test(@RequestBody EventForm eventForm,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        }
+            Event newEvent = new Event();
+            newEvent.setOnline(eventForm.online);
+            newEvent.setContent(eventForm.content);
+            newEvent.setSummary(eventForm.summary);
+            newEvent.setStartDate(eventForm.startDate);
+            newEvent.setEndDate(eventForm.endDate);
+            newEvent.setTitle(eventForm.title);
+            newEvent.setTags(eventForm.tags);
+            newEvent.setAddresses(eventForm.addresses);
+            newEvent.setOrganizerNames(eventForm.organizerNames);
+            newEvent.setUserProfileId(principal.getId());
+            newEvent = eventService.saveEvent(newEvent, eventForm.categoryIds, eventForm.statusId);
+            return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
+    }
     @RequestMapping(value = "events", method = RequestMethod.POST)
     public ResponseEntity<Event> create(@RequestBody EventForm eventForm,
                                         @AuthenticationPrincipal UserPrincipal principal){
-        if(principal == null ||
-                principal.getAuthorities().stream().anyMatch(r -> "Event Organizer".equals(r.getAuthority()))){
+        if(principal == null){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        }
-        Event newEvent = new Event();
-        newEvent.setOnline(eventForm.online);
-        newEvent.setContent(eventForm.content);
-        newEvent.setSummary(eventForm.summary);
-        newEvent.setStartDate(eventForm.startDate);
-        newEvent.setEndDate(eventForm.endDate);
-        newEvent.setTitle(eventForm.title);
-        newEvent.setTags(eventForm.tags);
-        newEvent.setOrganizerNames(eventForm.organizerNames);
-        newEvent = eventService.saveEvent(newEvent,principal.getId(), eventForm.categoryIds, eventForm.statusId);
-        return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
+        }else
+            return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+//        Event newEvent = new Event();
+//        newEvent.setOnline(eventForm.online);
+//        newEvent.setContent(eventForm.content);
+//        newEvent.setSummary(eventForm.summary);
+//        newEvent.setStartDate(eventForm.startDate);
+//        newEvent.setEndDate(eventForm.endDate);
+//        newEvent.setTitle(eventForm.title);
+//        newEvent.setTags(eventForm.tags);
+//        newEvent.setAddresses(eventForm.addresses);
+//        newEvent.setOrganizerNames(eventForm.organizerNames);
+//        newEvent = eventService.saveEvent(newEvent,principal.getId(), eventForm.categoryIds, eventForm.statusId);
+//        return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "events/categories", method = RequestMethod.GET)
@@ -77,7 +103,7 @@ public class EventController {
                                       @AuthenticationPrincipal UserPrincipal userPrincipal){
         Event editedEvent = eventService.getEventDetail(eventId);
         if(userPrincipal == null ||
-                editedEvent.getUserProfile().getId() != userPrincipal.getId()){
+                editedEvent.getUserProfileId() != userPrincipal.getId()){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
         editedEvent.setOnline(eventForm.online);
@@ -88,7 +114,8 @@ public class EventController {
         editedEvent.setTitle(eventForm.title);
         editedEvent.setTags(eventForm.tags);
         editedEvent.setOrganizerNames(eventForm.organizerNames);
-        editedEvent = eventService.saveEvent(editedEvent,0, eventForm.categoryIds, eventForm.statusId);
+        editedEvent.setAddresses(eventForm.addresses);
+        editedEvent = eventService.saveEvent(editedEvent, eventForm.categoryIds, eventForm.statusId);
         return new ResponseEntity<>(editedEvent, HttpStatus.ACCEPTED);
     }
 
@@ -104,8 +131,17 @@ public class EventController {
         String summary;
         Set<Long> categoryIds;
         int statusId;
+        Set<Address> addresses;
 
         public EventForm() {
+        }
+
+        public Set<Address> getAddresses() {
+            return addresses;
+        }
+
+        public void setAddresses(Set<Address> addresses) {
+            this.addresses = addresses;
         }
 
         public String getTitle() {

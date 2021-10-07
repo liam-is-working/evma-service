@@ -108,21 +108,22 @@ public class UserPrincipalController
         LoginResponse response = new LoginResponse();
         response.setStatus("Login success");
         response.setToken(jwt);
-        response.setUserPrincipal(SecurityContextHolder.getContext().getAuthentication());
+        long userId = ((UserPrincipal) authentication.getPrincipal()).getId();
+        response.setProfile(profileService.fetchProfile(userId));
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
     public static class LoginResponse{
         String status;
         String token;
-        Authentication userPrincipal;
+        UserProfile profile;
 
-        public Authentication getUserPrincipal() {
-            return userPrincipal;
+        public UserProfile getProfile() {
+            return profile;
         }
 
-        public void setUserPrincipal(Authentication userPrincipal) {
-            this.userPrincipal = userPrincipal;
+        public void setProfile(UserProfile profile) {
+            this.profile = profile;
         }
 
         public LoginResponse() {

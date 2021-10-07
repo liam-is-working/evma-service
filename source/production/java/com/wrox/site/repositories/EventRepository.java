@@ -13,4 +13,5 @@ public interface EventRepository extends PagingAndSortingRepository<Event, Long>
      Page<Event> getEventByUserProfileId(long userProfileId, Pageable p);
      Page<Event> getEventByStatusAndUserProfileId(EventStatus status,long userProfileId, Pageable p);
      Page<Event> getEventByStatus(EventStatus status, Pageable p);
+     //Page<Event> getEventByTitleOrTagsOrStar
 }

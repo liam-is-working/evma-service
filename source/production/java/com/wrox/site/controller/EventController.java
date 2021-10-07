@@ -32,7 +32,7 @@ public class EventController {
     EventStatusService eventStatusService;
 
     @RequestMapping(value = "events", method = RequestMethod.GET)
-    public ResponseEntity<PageEntity<Event>> fetchPublished(@PageableDefault(page = 0, size = 5) Pageable page){
+    public ResponseEntity<PageEntity<Event>> fetchPublishedEvent(@PageableDefault(page = 0, size = 5) Pageable page){
         Page<Event> eventPage = eventService.getPublishedEvent(page);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }

@@ -1,5 +1,6 @@
 package com.wrox.site.services;
 
+import com.wrox.site.SearchCriteria;
 import com.wrox.site.entities.Category;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.EventStatus;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -81,6 +83,19 @@ public class DefaultEventService implements EventService{
             throw new DataIntegrityViolationException("");
 
         return events.getEventByStatusAndUserProfileId(s,ownerId,p);
+    }
+
+    @Override
+    public Page<Event> searchEvent(SearchCriteria criteria, Pageable p) {
+        return events.searchEvent(criteria, p);
+    }
+
+    @Override
+    public Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
+                                   Set<String> tagSet, Instant startDate, Instant endDate, Pageable p) {
+
+        return events.searchEvent(title, categorySet, nameSet, tagSet, startDate
+                , endDate, p,status.findEventStatusByName("Published"));
     }
 
 

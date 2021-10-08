@@ -2,10 +2,13 @@ package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
 import com.wrox.exception.ResourceNotFoundException;
+import com.wrox.site.Criterion;
+import com.wrox.site.SearchCriteria;
 import com.wrox.site.entities.*;
 import com.wrox.site.services.CategoryService;
 import com.wrox.site.services.EventService;
 import com.wrox.site.services.EventStatusService;
+import com.wrox.site.validation.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,8 +21,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestEndpoint
 public class EventController {
@@ -93,6 +100,15 @@ public class EventController {
         return new ResponseEntity<>(categoryService.getAll(), HttpStatus.OK);
     }
 
+    @RequestMapping(value = "events/byCategory/{catId}", method = RequestMethod.GET)
+    public ResponseEntity<PageEntity<Event>> getByCategory(@PathVariable long catId,
+                                                       @PageableDefault Pageable p){
+        Set<Category> categorySet = new HashSet<>();
+        categorySet.add(categoryService.getById(catId));
+        Page<Event> eventPage = eventService.searchEvent(null,categorySet,null,null,null, null,p);
+        return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "events/status", method = RequestMethod.GET)
     public ResponseEntity<List<EventStatus>> getStatus(){
         return new ResponseEntity<>(eventStatusService.getStatus(), HttpStatus.OK);
@@ -143,7 +159,7 @@ public class EventController {
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(value = "events/byOrganizer/{organizerId}/{statusName}")
+    @RequestMapping(value = "events/byOrganizer/{organizerId}/{statusName}", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> getEventByStatus(@PathVariable(value = "organizerId") long organizerId,
                                                               @PathVariable(value = "statusName") String statusName,
                                                               @PageableDefault Pageable p,
@@ -156,6 +172,24 @@ public class EventController {
         Page<Event> eventPage = eventService.getEventByStatus(statusName,organizerId,p);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
+    //Admin search by status or id
+
+    @RequestMapping(value = "events/search", method = RequestMethod.POST)
+    public ResponseEntity<PageEntity<Event>> search(@RequestBody EventSearchForm form,
+                                                    @PageableDefault Pageable p){
+        //get searched categories
+        final Set<Category> categorySet = new HashSet<>();
+        List<Category> categories = categoryService.getAll();
+        Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, c-> c));
+        if(form.categories != null){
+            form.categories.stream().forEach(id -> categorySet.add((Category) categoryMap.get(id)));
+        }
+
+        Page<Event> eventPage = eventService.searchEvent(form.title,categorySet,form.organizers,
+                form.tags, form.startDate,form.endDate, p);
+        return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
+    }
+
 
     public static class eventStatusForm{
         int statusId;
@@ -276,6 +310,66 @@ public class EventController {
 
         public void setStatusId(int statusId) {
             this.statusId = statusId;
+        }
+    }
+
+    public static class EventSearchForm{
+        public String title;
+        public Set<String> tags;
+        public Set<String> organizers;
+        public Instant startDate;
+        public Instant endDate;
+        public Set<Long> categories;
+
+        public EventSearchForm() {
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public Set<String> getTags() {
+            return tags;
+        }
+
+        public void setTags(Set<String> tags) {
+            this.tags = tags;
+        }
+
+        public Set<String> getOrganizers() {
+            return organizers;
+        }
+
+        public void setOrganizers(Set<String> organizers) {
+            this.organizers = organizers;
+        }
+
+        public Instant getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(Instant startDate) {
+            this.startDate = startDate;
+        }
+
+        public Instant getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(Instant endDate) {
+            this.endDate = endDate;
+        }
+
+        public Set<Long> getCategories() {
+            return categories;
+        }
+
+        public void setCategories(Set<Long> categories) {
+            this.categories = categories;
         }
     }
 }

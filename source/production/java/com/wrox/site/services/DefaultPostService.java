@@ -31,4 +31,9 @@ public class DefaultPostService implements PostService{
     public Post getPost(long postId) {
         return posts.findOne(postId);
     }
+
+    @Override
+    public void deletePost(long postId) {
+        posts.delete(postId);
+    }
 }

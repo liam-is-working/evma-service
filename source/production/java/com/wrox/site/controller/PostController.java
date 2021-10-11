@@ -1,6 +1,7 @@
 package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
+import com.wrox.exception.ResourceNotFoundException;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.Post;
 import com.wrox.site.entities.UserPrincipal;
@@ -12,10 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -62,6 +60,22 @@ public class PostController {
         editedPost.setContent(postForm.content);
         editedPost.setEventId(postForm.eventId);
         return new ResponseEntity<>(postService.save(editedPost), HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(value = "post/{postId}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteEventPost(@AuthenticationPrincipal UserPrincipal principal,
+                                @PathVariable long postId){
+        Post post = postService.getPost(postId);
+
+        if(post == null)
+            throw new ResourceNotFoundException();
+
+        if(principal == null ||
+        eventService.getEventDetail(post.getEventId()).getUserProfileId()!= principal.getId())
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+
+        postService.deletePost(postId);
+        return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
     public static class PostForm implements Serializable{

@@ -32,8 +32,7 @@ public class ProfileController {
     ProfileService profileService;
 
     @RequestMapping(value = "profiles/currentUser", method = RequestMethod.GET)
-    public ModelAndView getCurrentUser(@AuthenticationPrincipal UserPrincipal principal,
-                                       HttpServletResponse response) throws IOException {
+    public ModelAndView getCurrentUser(@AuthenticationPrincipal UserPrincipal principal){
         if(principal == null)
             return new ModelAndView(new RedirectView("/api/login?error", true, false));
         long userId = principal.getId();
@@ -59,11 +58,9 @@ public class ProfileController {
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         UserProfile profile = profileService.fetchProfile(profileId);
         profile.setAddress(form.address);
-        profile.setAvatarURL(form.avatarURL);
         profile.setCity(form.city);
         profile.setDOB(form.DOB);
         profile.setEmail(form.email);
-        profile.setBackgroundURL(form.backgroundURL);
         profile.setJobTitle(form.jobTitle);
         profile.setPhoneNumber(form.phoneNumber);
         profile.setName(form.name);
@@ -99,10 +96,6 @@ public class ProfileController {
 
         @Size(max = 250)
         private String summary;
-
-        private String avatarURL;
-
-        private String backgroundURL;
 
         public ProfileForm() {
         }
@@ -171,20 +164,5 @@ public class ProfileController {
             this.summary = summary;
         }
 
-        public String getAvatarURL() {
-            return avatarURL;
-        }
-
-        public void setAvatarURL(String avatarURL) {
-            this.avatarURL = avatarURL;
-        }
-
-        public String getBackgroundURL() {
-            return backgroundURL;
-        }
-
-        public void setBackgroundURL(String backgroundURL) {
-            this.backgroundURL = backgroundURL;
-        }
     }
 }

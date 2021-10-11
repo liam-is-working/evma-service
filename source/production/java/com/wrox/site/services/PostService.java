@@ -12,4 +12,5 @@ public interface PostService {
     public Page<Post> getEventPosts(long eventId, Pageable p);
     public Post save(@Valid Post post);
     public Post getPost(long postId);
+    public void deletePost(long postId);
 }

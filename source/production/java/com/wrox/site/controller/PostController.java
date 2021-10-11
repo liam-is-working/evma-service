@@ -62,7 +62,7 @@ public class PostController {
         return new ResponseEntity<>(postService.save(editedPost), HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(value = "post/{postId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "posts/{postId}", method = RequestMethod.DELETE)
     public ResponseEntity deleteEventPost(@AuthenticationPrincipal UserPrincipal principal,
                                 @PathVariable long postId){
         Post post = postService.getPost(postId);

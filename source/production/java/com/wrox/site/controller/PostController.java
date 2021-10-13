@@ -16,6 +16,7 @@ import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -42,6 +43,8 @@ public class PostController {
         }
         Post newPost = new Post();
         newPost.setCreatedDate(postForm.createdDate);
+        if(postForm.createdDate==null)
+            newPost.setCreatedDate(Instant.now());
         newPost.setContent(postForm.content);
         newPost.setEventId(postForm.eventId);
         return new ResponseEntity<>(postService.save(newPost), HttpStatus.ACCEPTED);
@@ -53,9 +56,12 @@ public class PostController {
                                               @AuthenticationPrincipal UserPrincipal principal){
         Post editedPost = postService.getPost(postId);
         Event event = eventService.getEventDetail(editedPost.getEventId());
-        if(principal==null || event==null || event.getUserProfileId() != principal.getId()){
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        if(event==null){
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
+        if(principal==null || event.getUserProfileId() != principal.getId())
+            return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+
         editedPost.setCreatedDate(postForm.createdDate);
         editedPost.setContent(postForm.content);
         editedPost.setEventId(postForm.eventId);
@@ -68,7 +74,7 @@ public class PostController {
         Post post = postService.getPost(postId);
 
         if(post == null)
-            throw new ResourceNotFoundException();
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
 
         if(principal == null ||
         eventService.getEventDetail(post.getEventId()).getUserProfileId()!= principal.getId())
@@ -79,6 +85,7 @@ public class PostController {
     }
 
     public static class PostForm implements Serializable{
+        @Size(max = 2500, message = "Content < 2500")
         String content;
         Instant createdDate;
         long eventId;

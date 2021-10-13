@@ -50,7 +50,7 @@ public class UserProfile implements Serializable {
     @PhoneNumber(message = "invalid phone number")
     private String phoneNumber;
 
-    @Size(max = 250, message = "summary < 250")
+    @Size(max = 255, message = "summary < 255")
     private String summary;
 
     private String avatarURL;

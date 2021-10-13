@@ -146,12 +146,6 @@ public class UserPrincipalController
         }
     }
 
-    @RequestMapping(value = "/login?loggedOut", method = RequestMethod.GET)
-    public ResponseEntity<Void> loggedOut()
-    {
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/login?error", method = RequestMethod.GET)
     public ResponseEntity<Void> loginError()
     {

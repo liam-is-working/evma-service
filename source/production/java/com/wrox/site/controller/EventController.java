@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -38,18 +40,20 @@ public class EventController {
     @Inject
     EventStatusService eventStatusService;
 
+
     @RequestMapping(value = "events", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> fetchPublishedEvent(@PageableDefault(page = 0, size = 5) Pageable page){
         Page<Event> eventPage = eventService.getPublishedEvent(page);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
 
+    //Get all kinds of events with authorizing
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.GET)
     public ResponseEntity<Event> fetchById(@PathVariable long eventId,
                                            @AuthenticationPrincipal UserPrincipal principal){
         Event event = eventService.getEventDetail(eventId);
         if (event==null)
-            throw new ResourceNotFoundException();
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         if(!"Published".equals(event.getStatus().getName())){
             if(principal==null ||
                     (principal.getId()!=event.getUserProfileId()&&
@@ -59,6 +63,7 @@ public class EventController {
         return new ResponseEntity<>(eventService.getEventDetail(eventId), HttpStatus.OK);
     }
 
+    //Get published events only
     @RequestMapping(value = "events/byOrganizer/{organizerId}", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> fetchByOrganizer(@PathVariable long organizerId,
                                                               @PageableDefault(page = 0, size = 5) Pageable page){
@@ -66,7 +71,6 @@ public class EventController {
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
 
-    //test
     @RequestMapping(value = "events", method = RequestMethod.POST)
     public ResponseEntity<Event> create(@RequestBody @Valid EventForm eventForm,
                                         @AuthenticationPrincipal UserPrincipal principal
@@ -76,10 +80,6 @@ public class EventController {
                 principal.getAuthorities().stream().noneMatch(r -> "Event Organizer".equals(r.getAuthority()))) {
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
-        //Validation
-//        if(errors.hasErrors()){
-//            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-//        }
             Event newEvent = new Event();
             newEvent.setOnline(eventForm.online);
             newEvent.setContent(eventForm.content);
@@ -104,7 +104,10 @@ public class EventController {
     public ResponseEntity<PageEntity<Event>> getByCategory(@PathVariable long catId,
                                                        @PageableDefault Pageable p){
         Set<Category> categorySet = new HashSet<>();
-        categorySet.add(categoryService.getById(catId));
+        Category cat = categoryService.getById(catId);
+        if(cat == null)
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        categorySet.add(cat);
         Page<Event> eventPage = eventService.searchEvent(null,categorySet,null,null,null, null,p);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
@@ -123,10 +126,6 @@ public class EventController {
         if(userPrincipal == null || editedEvent == null ||
                 editedEvent.getUserProfileId() != userPrincipal.getId()){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        }
-        //validate
-        if (errors.hasErrors()){
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         editedEvent.setOnline(eventForm.online);
         editedEvent.setContent(eventForm.content);
@@ -148,7 +147,7 @@ public class EventController {
         //get event
         Event event = eventService.getEventDetail(eventId);
         if(event == null)
-            throw new ResourceNotFoundException();
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         //authorize
         if(principal==null ||
                 (principal.getId()!=event.getUserProfileId()&&
@@ -172,7 +171,8 @@ public class EventController {
         Page<Event> eventPage = eventService.getEventByStatus(statusName,organizerId,p);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
-    //Admin search by status or id
+
+    //Missing admin search by status or id method
 
     @RequestMapping(value = "events/search", method = RequestMethod.POST)
     public ResponseEntity<PageEntity<Event>> search(@RequestBody EventSearchForm form,
@@ -205,17 +205,22 @@ public class EventController {
 
     public static class EventForm{
 
+        @Size(max = 50, message = "Title < 50")
         String title;
 
+        @Size(max = 4000, message = "Content < 4000")
         String content;
         Set<String> tags;
         Set<String> organizerNames;
 
+        @NotNull(message = "Must specify if event is online")
         boolean online;
 
+        @NotNull(message = "Must specify startDate")
         Instant startDate;
         Instant endDate;
 
+        @Size(max = 255, message = "Summary < 255")
         String summary;
         Set<Long> categoryIds;
         int statusId;

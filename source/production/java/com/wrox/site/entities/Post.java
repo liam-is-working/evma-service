@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wrox.site.converters.InstantConverter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
 
@@ -17,6 +18,7 @@ import java.time.Instant;
 public class Post implements Serializable {
     private long id;
     private Instant createdDate;
+    @Size(max = 2500, message = "Content < 2500")
     private String content;
     private long eventId;
     private String imageURL;

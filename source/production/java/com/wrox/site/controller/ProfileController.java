@@ -41,7 +41,10 @@ public class ProfileController {
 
     @RequestMapping(value = "profiles/{profileId}", method = RequestMethod.GET)
     public ResponseEntity<UserProfile> fetchById(@PathVariable long profileId){
-        return new ResponseEntity<>(profileService.fetchProfile(profileId), HttpStatus.OK);
+        UserProfile profile = profileService.fetchProfile(profileId);
+        if(profile == null)
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(profile, HttpStatus.OK);
     }
 
     @RequestMapping(value = "profiles/organizers", method = RequestMethod.GET)
@@ -57,6 +60,8 @@ public class ProfileController {
         if(principal==null || principal.getId() != profileId)
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         UserProfile profile = profileService.fetchProfile(profileId);
+        if(profile == null)
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         profile.setAddress(form.address);
         profile.setCity(form.city);
         profile.setDOB(form.DOB);
@@ -69,32 +74,32 @@ public class ProfileController {
     }
 
     public static class ProfileForm implements Serializable {
-        @NotBlank
-        @Size(min = 1, max = 50)
+        @NotBlank(message = "Name must not blank")
+        @Size(min = 1, max = 50, message = "Name < 50")
         private String name;
 
-        @Email
-        @NotBlank
+        @Email(message = "Not a valid email")
+        @NotBlank(message = "Email must not blank")
         private String email;
 
         private Instant DOB;
 
-        @Size(min =1, max = 50)
-        @Name
+        @Size(min =1, max = 50, message = "City < 50")
+        @Name(message = "Not a valid name")
         private String city;
 
-        @Size(min = 1, max = 25)
-        @Name
+        @Size(min = 1, max = 25, message = "Title < 25")
+        @Name(message = "Not a valid job title")
         private String jobTitle;
 
-        @Size(min = 1, max = 50)
-        @Address
+        @Size(min = 1, max = 50, message = "Address < 50")
+        @Address(message = "Not a valid address")
         private String address;
 
-        @PhoneNumber
+        @PhoneNumber(message = "Not a valid phone number")
         private String phoneNumber;
 
-        @Size(max = 250)
+        @Size(max = 255, message = "Summary < 255")
         private String summary;
 
         public ProfileForm() {

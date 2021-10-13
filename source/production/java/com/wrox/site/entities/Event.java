@@ -33,7 +33,7 @@ public class Event implements Serializable {
 
     private long userProfileId;
 
-    @NotNull(message = "online must not be null")
+    @NotNull(message = "Online must not be null")
     private boolean online;
 
     private Set<Address> addresses;
@@ -46,9 +46,9 @@ public class Event implements Serializable {
     private EventStatus status;
 
     private String coverURL;
-    @Size(max = 140, message = "summary < 140")
+    @Size(max = 255, message = "Summary < 255")
     private String summary;
-    @Size(max = 2500, message = "content < 25000")
+    @Size(max = 4000, message = "Content < 4000")
     private String content;
 
     public Event(){}

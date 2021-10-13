@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.Embeddable;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -14,7 +15,9 @@ import java.util.Objects;
         isGetterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Address implements Serializable{
+    @Size(max = 50, message = "Address name < 50")
     private String name;
+    @Size(max = 50, message = "Address full text < 50")
     private String fullText;
     private boolean isURL;
 

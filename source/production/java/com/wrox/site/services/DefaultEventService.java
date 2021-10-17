@@ -98,5 +98,10 @@ public class DefaultEventService implements EventService{
                 , endDate, p,status.findEventStatusByName("Published"));
     }
 
+    @Override
+    public Page<Event> getFollowedEvent(List<Long> ids, Pageable p) {
+        return events.getEventByIdInAndStatusIsNot(ids, status.findEventStatusByName("Deleted"), p );
+    }
+
 
 }

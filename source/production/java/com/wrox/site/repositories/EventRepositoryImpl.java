@@ -127,6 +127,11 @@ public class EventRepositoryImpl implements CustomEventRepository{
 
     }
 
+    @Override
+    public Page<Event> getEventByIds(Set<Long> ids) {
+        return null;
+    }
+
     private static Predicate[] toPredicates(Collection<Predicate> predicates){
         Predicate[] returnVal = new Predicate[predicates.size()];
         int i = 0;

@@ -3,6 +3,7 @@ package com.wrox.site.services;
 import com.wrox.site.SearchCriteria;
 import com.wrox.site.entities.Category;
 import com.wrox.site.entities.Event;
+import com.wrox.site.entities.EventStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
@@ -22,4 +23,5 @@ public interface EventService {
      Page<Event> searchEvent(SearchCriteria criteria, Pageable p);
      Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
                              Set<String> tagSet, Instant startDate, Instant endDate, Pageable p);
+     Page<Event> getFollowedEvent(List<Long> ids, Pageable p);
 }

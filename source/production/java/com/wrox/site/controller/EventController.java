@@ -1,14 +1,11 @@
 package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
-import com.wrox.exception.ResourceNotFoundException;
-import com.wrox.site.Criterion;
-import com.wrox.site.SearchCriteria;
 import com.wrox.site.entities.*;
 import com.wrox.site.services.CategoryService;
 import com.wrox.site.services.EventService;
 import com.wrox.site.services.EventStatusService;
-import com.wrox.site.validation.NotBlank;
+import com.wrox.site.services.FirebaseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestEndpoint
@@ -39,6 +36,8 @@ public class EventController {
     CategoryService categoryService;
     @Inject
     EventStatusService eventStatusService;
+    @Inject
+    FirebaseService firebaseService;
 
 
     @RequestMapping(value = "events", method = RequestMethod.GET)
@@ -74,7 +73,7 @@ public class EventController {
     @RequestMapping(value = "events", method = RequestMethod.POST)
     public ResponseEntity<Event> create(@RequestBody @Valid EventForm eventForm,
                                         @AuthenticationPrincipal UserPrincipal principal
-                                        ) {
+                                        ) throws ExecutionException, InterruptedException {
         //Authorize
         if (principal == null ||
                 principal.getAuthorities().stream().noneMatch(r -> "Event Organizer".equals(r.getAuthority()))) {
@@ -92,6 +91,7 @@ public class EventController {
             newEvent.setOrganizerNames(eventForm.organizerNames);
             newEvent.setUserProfileId(principal.getId());
             newEvent = eventService.saveEvent(newEvent, eventForm.categoryIds, eventForm.statusId);
+            firebaseService.notify(principal.getId(), FirebaseService.NotificationTrigger.ADD_EVENT, FirebaseService.Issuer.ORGANIZER,null);
             return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
     }
 
@@ -120,13 +120,25 @@ public class EventController {
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.PUT)
     public ResponseEntity<Event> edit(@RequestBody @Valid EventForm eventForm,
                                       Errors errors,@PathVariable long eventId,
-                                      @AuthenticationPrincipal UserPrincipal userPrincipal){
+                                      @AuthenticationPrincipal UserPrincipal userPrincipal) throws ExecutionException, InterruptedException {
+
         //authorize
         Event editedEvent = eventService.getEventDetail(eventId);
         if(userPrincipal == null || editedEvent == null ||
                 editedEvent.getUserProfileId() != userPrincipal.getId()){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
+
+        //validate event status
+        if(editedEvent.getStatus().getName().equals("Cancelled") ||
+                editedEvent.getStatus().getName().equals("Deleted"))
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+
+        //Notification flag
+        boolean isPublished = editedEvent.getStatus().getName().equals("Published");
+        boolean updateTitle = !editedEvent.getTitle().equals(eventForm.title);
+        String oldTitle = editedEvent.getTitle();
+
         editedEvent.setOnline(eventForm.online);
         editedEvent.setContent(eventForm.content);
         editedEvent.setSummary(eventForm.summary);
@@ -137,13 +149,23 @@ public class EventController {
         editedEvent.setOrganizerNames(eventForm.organizerNames);
         editedEvent.setAddresses(eventForm.addresses);
         editedEvent = eventService.saveEvent(editedEvent, eventForm.categoryIds, eventForm.statusId);
+
+        //Only noti if event is published
+        if(isPublished){
+            firebaseService.notify(eventId, FirebaseService.NotificationTrigger.UPDATE_EVENT_DETAILS,
+                    FirebaseService.Issuer.EVENT, null);
+            if(updateTitle)
+                firebaseService.notify(eventId, FirebaseService.NotificationTrigger.CHANGE_EVENT_TITLE,
+                        FirebaseService.Issuer.EVENT, oldTitle);
+        }
+
         return new ResponseEntity<>(editedEvent, HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = "events/{eventId}", method = RequestMethod.PATCH)
     public ResponseEntity changeEventStatus(@RequestBody eventStatusForm form,
                                             @PathVariable long eventId,
-                                            @AuthenticationPrincipal UserPrincipal principal){
+                                            @AuthenticationPrincipal UserPrincipal principal) throws ExecutionException, InterruptedException {
         //get event
         Event event = eventService.getEventDetail(eventId);
         if(event == null)
@@ -154,10 +176,41 @@ public class EventController {
                         principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
             return new ResponseEntity(HttpStatus.FORBIDDEN);
 
+        EventStatus changeStat = eventStatusService.getStatus(form.statusId);
+        if(changeStat ==null)
+            return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+
+        //Notification flag
+        FirebaseService.NotificationTrigger trigger = null;
+        boolean switchState = false;
+        boolean addNew = false;
+        //From published to other statuses
+        if(event.getStatus().getName().equals("Published")){
+            switchState = true;
+            if(changeStat.getName().equals("Cancelled"))
+                trigger = FirebaseService.NotificationTrigger.CANCEL_EVENT;
+            if(changeStat.getName().equals("Deleted"))
+                trigger = FirebaseService.NotificationTrigger.DELETE_EVENT;
+            if(trigger == null)
+                switchState = false;
+        }
+        //From other status to Published
+        if(changeStat.getName().equals("Published") && event.getStatus().getName().equals("Draft")){
+            addNew = true;
+            trigger = FirebaseService.NotificationTrigger.ADD_EVENT;
+        }
+
         eventService.saveEvent(event,null,form.getStatusId());
+        if(switchState){
+            firebaseService.notify(event.getId(),trigger, FirebaseService.Issuer.EVENT,null);
+        }
+        if(addNew){
+            firebaseService.notify(event.getUserProfileId(),trigger, FirebaseService.Issuer.ORGANIZER, null);
+        }
         return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
+    //url events/byOrganizer/a/published
     @RequestMapping(value = "events/byOrganizer/{organizerId}/{statusName}", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> getEventByStatus(@PathVariable(value = "organizerId") long organizerId,
                                                               @PathVariable(value = "statusName") String statusName,
@@ -191,6 +244,20 @@ public class EventController {
     }
 
 
+    public static class eventIdListForm{
+        public List<Long> ids;
+
+        public List<Long> getIds() {
+            return ids;
+        }
+
+        public eventIdListForm() {
+        }
+
+        public void setIds(List<Long> ids) {
+            this.ids = ids;
+        }
+    }
     public static class eventStatusForm{
         int statusId;
 

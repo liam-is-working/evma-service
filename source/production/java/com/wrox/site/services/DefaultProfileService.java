@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class DefaultProfileService implements ProfileService{
@@ -38,5 +39,10 @@ public class DefaultProfileService implements ProfileService{
             profile.setAvatarURL("userAvatar_"+profile.getId());
         }
         return profile;
+    }
+
+    @Override
+    public Page<UserProfile> fetchOrganizers(Pageable p, List<Long> ids) {
+        return userProfile.getByRoleAndIdIn(authority.getByAuthority("Event Organizer"), p, ids );
     }
 }

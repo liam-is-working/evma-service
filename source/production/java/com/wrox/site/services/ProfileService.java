@@ -13,4 +13,5 @@ public interface ProfileService {
     public Page<UserProfile> fetchOrganizers(Pageable p);
     public UserProfile fetchProfile(long profileId);
     public UserProfile save(@Valid UserProfile profile);
+    public Page<UserProfile> fetchOrganizers(Pageable p , List<Long> ids);
 }

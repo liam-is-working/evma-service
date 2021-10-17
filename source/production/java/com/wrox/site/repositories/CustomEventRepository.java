@@ -16,4 +16,5 @@ public interface CustomEventRepository {
     Page<Event> searchEvent(SearchCriteria criteria, Pageable p);
     Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> organizerNameSet,
                             Set<String> tagSet, Instant startDate, Instant endDate, Pageable p, EventStatus published);
+    Page<Event> getEventByIds(Set<Long> ids);
 }

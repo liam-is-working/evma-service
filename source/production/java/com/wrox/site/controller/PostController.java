@@ -6,6 +6,7 @@ import com.wrox.site.entities.Event;
 import com.wrox.site.entities.Post;
 import com.wrox.site.entities.UserPrincipal;
 import com.wrox.site.services.EventService;
+import com.wrox.site.services.FirebaseService;
 import com.wrox.site.services.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import javax.inject.Inject;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.concurrent.ExecutionException;
 
 @RestEndpoint
 public class PostController {
@@ -26,17 +28,20 @@ public class PostController {
     PostService postService;
     @Inject
     EventService eventService;
+    @Inject
+    FirebaseService firebaseService;
 
     @RequestMapping(value = "posts/{eventId}", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Post>> fetchEventPost(@PathVariable long eventId,
                                                            @PageableDefault(size = 5)Pageable p){
         Page<Post> postPage = postService.getEventPosts(eventId, p);
+        //tao ra 1 object Response va thiet ke object do cho phu hop
         return new ResponseEntity<>(new PageEntity<>(postPage), HttpStatus.OK);
     }
 
     @RequestMapping(value = "posts", method = RequestMethod.POST)
     public ResponseEntity<Post> createEventPost(@RequestBody PostForm postForm,
-                                                @AuthenticationPrincipal UserPrincipal principal){
+                                                @AuthenticationPrincipal UserPrincipal principal) throws ExecutionException, InterruptedException {
         Event event = eventService.getEventDetail(postForm.eventId);
         if(principal==null || event==null || event.getUserProfileId()!= principal.getId()){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -47,7 +52,9 @@ public class PostController {
             newPost.setCreatedDate(Instant.now());
         newPost.setContent(postForm.content);
         newPost.setEventId(postForm.eventId);
-        return new ResponseEntity<>(postService.save(newPost), HttpStatus.ACCEPTED);
+        newPost = postService.save(newPost);
+        firebaseService.notify(event.getId(), FirebaseService.NotificationTrigger.ADD_NEW_POST, FirebaseService.Issuer.EVENT,null);
+        return new ResponseEntity<>(newPost, HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(value = "posts/{postId}", method = RequestMethod.PUT)

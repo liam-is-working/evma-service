@@ -227,6 +227,12 @@ public class EventController {
 
     //Missing admin search by status or id method
 
+    //test
+    @RequestMapping(value = "test")
+    public ResponseEntity<List<Event>> test (){
+        return new ResponseEntity<>(eventService.testDate(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "events/search", method = RequestMethod.POST)
     public ResponseEntity<PageEntity<Event>> search(@RequestBody EventSearchForm form,
                                                     @PageableDefault Pageable p){
@@ -242,6 +248,8 @@ public class EventController {
                 form.tags, form.startDate,form.endDate, p);
         return new ResponseEntity<>(new PageEntity<>(eventPage), HttpStatus.OK);
     }
+
+
 
 
     public static class eventIdListForm{

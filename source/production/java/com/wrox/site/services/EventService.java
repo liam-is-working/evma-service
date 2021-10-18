@@ -6,12 +6,14 @@ import com.wrox.site.entities.Event;
 import com.wrox.site.entities.EventStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 @Validated
 public interface EventService {
@@ -24,4 +26,9 @@ public interface EventService {
      Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
                              Set<String> tagSet, Instant startDate, Instant endDate, Pageable p);
      Page<Event> getFollowedEvent(List<Long> ids, Pageable p);
+
+     void notifySoonHappenEvents() throws ExecutionException, InterruptedException;
+     void notifyTodayHappenEvents() throws ExecutionException, InterruptedException;
+
+     List<Event> testDate();
 }

@@ -11,15 +11,22 @@ import com.wrox.site.repositories.UserProfileRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class DefaultEventService implements EventService{
@@ -32,6 +39,8 @@ public class DefaultEventService implements EventService{
     EventStatusRepository status;
     @Inject
     UserProfileRepository profile;
+    @Inject
+    FirebaseService firebaseService;
 
     @Override
     @Transactional
@@ -101,6 +110,40 @@ public class DefaultEventService implements EventService{
     @Override
     public Page<Event> getFollowedEvent(List<Long> ids, Pageable p) {
         return events.getEventByIdInAndStatusIsNot(ids, status.findEventStatusByName("Deleted"), p );
+    }
+
+    @Override
+    @Async
+    @Scheduled(cron = "* */10 * * * *")
+    public void notifySoonHappenEvents() throws ExecutionException, InterruptedException {
+        ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
+        Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC);
+        List<Event> eventList = events.getEventByStartDateBetween(below, below.plus(10, ChronoUnit.MINUTES));
+        for(Event e : eventList){
+            firebaseService.notify(e.getId(), FirebaseService.NotificationTrigger.START_SOON,
+                    FirebaseService.Issuer.EVENT,null);
+        }
+    }
+
+    @Override
+    @Async
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void notifyTodayHappenEvents() throws ExecutionException, InterruptedException {
+        ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
+        Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.DAYS);
+        List<Event> eventList = events.getEventByStartDateBetween(below, below.plus(1, ChronoUnit.DAYS));
+        for(Event e : eventList){
+            firebaseService.notify(e.getId(), FirebaseService.NotificationTrigger.START_TODAY,
+                    FirebaseService.Issuer.EVENT,null);
+        }
+    }
+
+    @Override
+    public List<Event> testDate() {
+        ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
+        Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC);
+        List<Event> eventList = events.getEventByStartDateBetween(below, below.plus(10, ChronoUnit.MINUTES));
+        return eventList;
     }
 
 

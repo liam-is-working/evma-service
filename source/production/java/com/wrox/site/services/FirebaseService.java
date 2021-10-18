@@ -7,20 +7,21 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.database.*;
+import com.wrox.config.RootContextConfiguration;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.UserProfile;
 import com.wrox.site.repositories.EventRepository;
 import com.wrox.site.repositories.UserProfileRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.net.URL;
+import java.time.*;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +37,11 @@ public class FirebaseService {
 
     @PostConstruct()
     public void initialize() throws IOException {
+        URL configFilePath = RootContextConfiguration.class
+                .getClassLoader().getResource("evma-fpt-firebase-adminsdk-nei30-a60a9f6e4b.json");
+        //String configFilePath = new File("source/production/resources/evma-fpt-firebase-adminsdk-nei30-a60a9f6e4b.json").getAbsolutePath();
         FileInputStream serviceAccount =
-                new FileInputStream("C:\\Users\\ACER\\Desktop\\EVMA-FIx\\source\\production\\resources\\evma-fpt-firebase-adminsdk-nei30-a60a9f6e4b.json");
+                new FileInputStream(configFilePath.getFile());
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -112,7 +116,8 @@ public class FirebaseService {
         DELETE_EVENT(false),
         ADD_EVENT(true),
         CHANGE_ORGANIZER_NAME(true),
-        START_SOON(false);
+        START_SOON(false),
+        START_TODAY(false);
 
 
         boolean organizerRelated;
@@ -125,8 +130,10 @@ public class FirebaseService {
         EVENT
     }
 
+    @Async
     public String notify(long issuerId, NotificationTrigger trigger, Issuer issuer, String addition) throws ExecutionException, InterruptedException {
         final Firestore db = FirestoreClient.getFirestore();
+        ZoneId hcmZoneId = ZoneId.of("Asia/Ho_Chi_Minh");
         String role = null;
         if(issuer==Issuer.EVENT)
             role = "e";
@@ -137,10 +144,12 @@ public class FirebaseService {
         String docName = stringBuilder.append("_").append(role).toString();
         stringBuilder.setLength(0);
 
+        LocalDateTime VNnow = Instant.now().atZone(hcmZoneId).toLocalDateTime();
+
         String collectionName = stringBuilder.
-                append(LocalDate.now().getDayOfMonth()).
+                append(VNnow.getDayOfMonth()).
                 append(".").
-                append(LocalDate.now().getMonth().getValue()).toString();
+                append(VNnow.getMonthValue()).toString();
 
         DocumentReference instantRef = null;
         DocumentReference storeNotiRef = null;
@@ -150,7 +159,7 @@ public class FirebaseService {
         String message = this.buildNotificationMessage(trigger,issuerId,addition);
 
         Map<String, String>value = new Hashtable<>();
-        value.put(Instant.now().toString(), message);
+        value.put(VNnow.toString(), message);
 
         instantRef.set(value);
         ApiFuture<WriteResult> result = storeNotiRef.set(value, SetOptions.merge());
@@ -195,6 +204,8 @@ public class FirebaseService {
                     return sb.append(eventTitle).append(" will start soon at ")
                             .append(hour).append(":").append(minute).toString();
                 }
+                case START_TODAY:
+                    return sb.append(eventTitle).append(" will start today").toString();
                 default: return null;
             }
         }

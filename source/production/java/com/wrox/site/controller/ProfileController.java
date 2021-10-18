@@ -25,6 +25,8 @@ import javax.validation.constraints.Size;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestEndpoint
@@ -119,8 +121,11 @@ public class ProfileController {
                                                                @PageableDefault Pageable p) throws ExecutionException, InterruptedException {
         if(principal==null || principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
+        List<Long> followIds = firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.EVENT);
+        if(followIds==null)
+            return new ResponseEntity<>(null, HttpStatus.OK);
         Page<Event> resultPage = eventService.getFollowedEvent
-                (firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.EVENT),p);
+                (followIds,p);
         return new ResponseEntity<>(new PageEntity<>(resultPage), HttpStatus.OK);
     }
     @RequestMapping(value = "getFollowOrganizers", method = RequestMethod.GET)
@@ -128,9 +133,14 @@ public class ProfileController {
                                                                @PageableDefault Pageable p) throws ExecutionException, InterruptedException {
         if(principal==null || principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
-        Page<UserProfile> resultPage = profileService
-                .fetchOrganizers(p,firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.ORGANIZER));
-        return new ResponseEntity<>(new PageEntity<>(resultPage), HttpStatus.OK);
+        List<Long> followIds = firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.ORGANIZER);
+        if(followIds == null){
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        }
+            Page<UserProfile> resultPage = profileService
+                    .fetchOrganizers(p,followIds);
+            return new ResponseEntity<>(new PageEntity<>(resultPage), HttpStatus.OK);
+
     }
     public static class ProfileForm implements Serializable {
         @NotBlank(message = "Name must not blank")

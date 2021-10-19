@@ -145,19 +145,6 @@ public class Event implements Serializable {
         this.online = online;
     }
 
-
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @CollectionTable(name = "Event_Address",
-//            joinColumns = {@JoinColumn(name = "EventId", referencedColumnName = "EventId")})
-//    @JsonProperty
-//    public Set<Address> getAddresses() {
-//        return addresses;
-//    }
-//
-//    public void setAddresses(Set<Address> addresses) {
-//        this.addresses = addresses;
-//    }
-
     @Convert(converter = InstantConverter.class)
     @Basic(fetch = FetchType.EAGER)
     @JsonProperty

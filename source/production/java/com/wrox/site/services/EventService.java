@@ -29,6 +29,4 @@ public interface EventService {
 
      void notifySoonHappenEvents() throws ExecutionException, InterruptedException;
      void notifyTodayHappenEvents() throws ExecutionException, InterruptedException;
-
-     List<Event> testDate();
 }

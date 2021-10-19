@@ -20,6 +20,9 @@ import javax.inject.Inject;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.concurrent.ExecutionException;
 
 @RestEndpoint
@@ -32,10 +35,9 @@ public class PostController {
     FirebaseService firebaseService;
 
     @RequestMapping(value = "posts/{eventId}", method = RequestMethod.GET)
-    public ResponseEntity<PageEntity<Post>> fetchEventPost(@PathVariable long eventId,
-                                                           @PageableDefault(size = 5)Pageable p){
+    public ResponseEntity<PageEntity<Post>> fetchEventPosts(@PathVariable long eventId,
+                                                           @PageableDefault(page = 0,size = 5)Pageable p){
         Page<Post> postPage = postService.getEventPosts(eventId, p);
-        //tao ra 1 object Response va thiet ke object do cho phu hop
         return new ResponseEntity<>(new PageEntity<>(postPage), HttpStatus.OK);
     }
 
@@ -48,8 +50,11 @@ public class PostController {
         }
         Post newPost = new Post();
         newPost.setCreatedDate(postForm.createdDate);
-        if(postForm.createdDate==null)
-            newPost.setCreatedDate(Instant.now());
+
+        if(postForm.createdDate==null){
+            ZoneId hcmZoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+            newPost.setCreatedDate(LocalDateTime.now(hcmZoneId).toInstant(ZoneOffset.UTC));
+        }
         newPost.setContent(postForm.content);
         newPost.setEventId(postForm.eventId);
         newPost = postService.save(newPost);
@@ -62,8 +67,8 @@ public class PostController {
                                                 @PathVariable(value = "postId") long postId,
                                               @AuthenticationPrincipal UserPrincipal principal){
         Post editedPost = postService.getPost(postId);
-        Event event = eventService.getEventDetail(editedPost.getEventId());
-        if(event==null){
+        Event event = eventService.getEventDetail(postForm.eventId);
+        if(editedPost==null || event==null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         if(principal==null || event.getUserProfileId() != principal.getId())
@@ -71,7 +76,6 @@ public class PostController {
 
         editedPost.setCreatedDate(postForm.createdDate);
         editedPost.setContent(postForm.content);
-        editedPost.setEventId(postForm.eventId);
         return new ResponseEntity<>(postService.save(editedPost), HttpStatus.ACCEPTED);
     }
 

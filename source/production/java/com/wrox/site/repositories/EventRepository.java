@@ -2,14 +2,12 @@ package com.wrox.site.repositories;
 
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.EventStatus;
-import com.wrox.site.entities.UserProfile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository

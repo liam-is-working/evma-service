@@ -138,13 +138,5 @@ public class DefaultEventService implements EventService{
         }
     }
 
-    @Override
-    public List<Event> testDate() {
-        ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
-        Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC);
-        List<Event> eventList = events.getEventByStartDateBetween(below, below.plus(10, ChronoUnit.MINUTES));
-        return eventList;
-    }
-
 
 }

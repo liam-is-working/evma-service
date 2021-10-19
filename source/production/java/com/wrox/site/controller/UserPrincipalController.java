@@ -20,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
@@ -28,6 +29,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.sql.SQLException;
@@ -59,8 +62,12 @@ public class UserPrincipalController
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<Long> signup(@RequestBody SignupForm signupForm)
+    public ResponseEntity<Long> signup(@RequestBody @Valid SignupForm signupForm,
+                                       Errors error)
     {
+        if(error.hasErrors())
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+
         UserPrincipal newUser = new UserPrincipal();
         newUser.setUsername(signupForm.signUsername);
         newUser.setEnabled(true);
@@ -162,12 +169,16 @@ public class UserPrincipalController
         @NotBlank
         @NotNull
         public String role;
+
         @NotBlank
         @NotNull
         public String name;
-        @Email
+
+        @NotBlank
         @NotNull
         public String email;
+
+        @NotBlank
         @NotNull
         public Instant DOB;
 

@@ -144,7 +144,7 @@ public class FirebaseService {
         String docName = stringBuilder.append("_").append(role).toString();
         stringBuilder.setLength(0);
 
-        LocalDateTime VNnow = Instant.now().atZone(hcmZoneId).toLocalDateTime();
+        LocalDateTime VNnow = LocalDateTime.now(hcmZoneId);
 
         String collectionName = stringBuilder.
                 append(VNnow.getDayOfMonth()).

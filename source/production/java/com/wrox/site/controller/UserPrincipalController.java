@@ -177,7 +177,7 @@ public class UserPrincipalController
         @NotBlank
         @NotNull
         public String email;
-        
+
         @NotNull
         public Instant DOB;
 

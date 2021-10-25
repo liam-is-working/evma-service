@@ -45,7 +45,7 @@ public class RestExceptionHandler {
     @ExceptionHandler({DataIntegrityViolationException.class})
     public ResponseEntity<ErrorItem> handle(DataIntegrityViolationException e){
         ErrorItem item = new ErrorItem();
-        item.setMessage("Data integrity violation");
+        item.setMessage(e.getMessage());
         //item.setCode(e.get);
         return new ResponseEntity<>(item, HttpStatus.BAD_REQUEST);
     }

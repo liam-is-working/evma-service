@@ -54,7 +54,7 @@ public class EventController {
         if (event==null)
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         if(!"Published".equals(event.getStatus().getName())){
-            if(principal==null ||
+            if(principal==null || principal.isEnabled() == false ||
                     (principal.getId()!=event.getUserProfileId()&&
                             principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
                 return new ResponseEntity<>(null,HttpStatus.FORBIDDEN);
@@ -75,7 +75,7 @@ public class EventController {
                                         @AuthenticationPrincipal UserPrincipal principal
                                         ) throws ExecutionException, InterruptedException {
         //Authorize
-        if (principal == null ||
+        if (principal == null || principal.isEnabled() == false||
                 principal.getAuthorities().stream().noneMatch(r -> "Event Organizer".equals(r.getAuthority()))) {
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
@@ -124,7 +124,7 @@ public class EventController {
 
         //authorize
         Event editedEvent = eventService.getEventDetail(eventId);
-        if(userPrincipal == null || editedEvent == null ||
+        if(userPrincipal == null || userPrincipal.isEnabled() == false|| editedEvent == null ||
                 editedEvent.getUserProfileId() != userPrincipal.getId()){
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         }
@@ -171,7 +171,7 @@ public class EventController {
         if(event == null)
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         //authorize
-        if(principal==null ||
+        if(principal==null || principal.isEnabled() == false ||
                 (principal.getId()!=event.getUserProfileId()&&
                         principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
             return new ResponseEntity(HttpStatus.FORBIDDEN);
@@ -216,7 +216,7 @@ public class EventController {
                                                               @PathVariable(value = "statusName") String statusName,
                                                               @PageableDefault Pageable p,
                                                               @AuthenticationPrincipal UserPrincipal principal){
-        if(principal==null || (principal.getId() != organizerId &&
+        if(principal==null || principal.isEnabled() == false || (principal.getId() != organizerId &&
         principal.getAuthorities().stream().anyMatch(r -> "Admin".equals(r.getAuthority()))))
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 

@@ -45,7 +45,7 @@ public class PostController {
     public ResponseEntity<Post> createEventPost(@RequestBody PostForm postForm,
                                                 @AuthenticationPrincipal UserPrincipal principal) throws ExecutionException, InterruptedException {
         Event event = eventService.getEventDetail(postForm.eventId);
-        if(principal==null || event==null || event.getUserProfileId()!= principal.getId()){
+        if(principal==null || principal.isEnabled() == false|| event==null || event.getUserProfileId()!= principal.getId()){
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
         Post newPost = new Post();
@@ -71,7 +71,7 @@ public class PostController {
         if(editedPost==null || event==null){
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
-        if(principal==null || event.getUserProfileId() != principal.getId())
+        if(principal==null || principal.isEnabled() == false||event.getUserProfileId() != principal.getId())
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
 
         editedPost.setCreatedDate(postForm.createdDate);
@@ -87,7 +87,7 @@ public class PostController {
         if(post == null)
             return new ResponseEntity(HttpStatus.NOT_FOUND);
 
-        if(principal == null ||
+        if(principal == null || principal.isEnabled() == false||
         eventService.getEventDetail(post.getEventId()).getUserProfileId()!= principal.getId())
             return new ResponseEntity(HttpStatus.FORBIDDEN);
 

@@ -4,9 +4,7 @@ import com.wrox.config.annotation.RestEndpoint;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.UserPrincipal;
 import com.wrox.site.entities.UserProfile;
-import com.wrox.site.services.EventService;
-import com.wrox.site.services.FirebaseService;
-import com.wrox.site.services.ProfileService;
+import com.wrox.site.services.*;
 import com.wrox.site.validation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +35,10 @@ public class ProfileController {
     FirebaseService firebaseService;
     @Inject
     EventService eventService;
+    @Inject
+    RoleService roleService;
+    @Inject
+    UserPrincipalService userPrincipalService;
 
     @RequestMapping(value = "profiles/currentUser", method = RequestMethod.GET)
     public ModelAndView getCurrentUser(@AuthenticationPrincipal UserPrincipal principal){
@@ -64,7 +66,7 @@ public class ProfileController {
     public ResponseEntity<UserProfile> updateProfile(@PathVariable long profileId,
                                                      @RequestBody ProfileForm form,
                                                      @AuthenticationPrincipal UserPrincipal principal) throws ExecutionException, InterruptedException {
-        if(principal==null || principal.getId() != profileId)
+        if(principal==null || principal.getId() != profileId || principal.isEnabled() == false)
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         UserProfile profile = profileService.fetchProfile(profileId);
         if(profile == null)
@@ -72,9 +74,21 @@ public class ProfileController {
         //Notify flag
         boolean orgChangeName = false;
         String oldName = profile.getName();
-        if(profile.getRole().getAuthority().equals("Event Organizer") && !profile.getName().equals(form.name));
+        if("Event Organizer".equals(profile.getRole().getAuthority())&& !profile.getName().equals(form.name));
             orgChangeName = true;
         profile.setAddress(form.address);
+        if(form.role!=null){
+            //hardcoded
+            //If update to these roles, account will be unable till admin approves
+            if("Event Organizer".equals(form.role) || "Admin".equals(form.role)){
+                principal.setEnabled(false);
+                userPrincipalService.saveUser(principal, null, form.role);
+            }else if("Attendees".equals(form.role)){
+                principal.setEnabled(true);
+                userPrincipalService.saveUser(principal, null, form.role);
+            }
+            profile.setRole(roleService.getRole(form.role));
+        }
         profile.setCity(form.city);
         profile.setDOB(form.DOB);
         profile.setEmail(form.email);
@@ -91,35 +105,35 @@ public class ProfileController {
     @RequestMapping(value = "followEvent", method = RequestMethod.GET)
     public ResponseEntity followEvent(@AuthenticationPrincipal UserPrincipal principal,
                                       @RequestParam long eventId) throws ExecutionException, InterruptedException {
-        if(principal == null)
+        if(principal == null || principal.isEnabled() == false)
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), eventId, FirebaseService.FollowOperation.FOLLOW_EVENT), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "unfollowEvent", method = RequestMethod.GET)
     public ResponseEntity unfollowEvent(@AuthenticationPrincipal UserPrincipal principal,
                                         @RequestParam long eventId) throws ExecutionException, InterruptedException {
-        if(principal == null)
+        if(principal == null || principal.isEnabled() == false)
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), eventId, FirebaseService.FollowOperation.UNFOLLOW_EVENT), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "followOrganizer", method = RequestMethod.GET)
     public ResponseEntity followOrganizer(@AuthenticationPrincipal UserPrincipal principal,
                                           @RequestParam long organizerId) throws ExecutionException, InterruptedException {
-        if(principal == null)
+        if(principal == null || principal.isEnabled() == false)
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), organizerId, FirebaseService.FollowOperation.FOLLOW_ORGANIZER), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "unfollowOrganizer", method = RequestMethod.GET)
     public ResponseEntity unfollowOrganizer(@AuthenticationPrincipal UserPrincipal principal,
                                             @RequestParam long organizerId) throws ExecutionException, InterruptedException {
-        if(principal == null)
+        if(principal == null || principal.isEnabled() == false)
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), organizerId, FirebaseService.FollowOperation.UNFOLLOW_ORGANIZER), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "getFollowEvents",method = RequestMethod.GET)
     public ResponseEntity<PageEntity<Event>> getFollowedEvents(@AuthenticationPrincipal UserPrincipal principal,
                                                                @PageableDefault Pageable p) throws ExecutionException, InterruptedException {
-        if(principal==null || principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
+        if(principal==null || principal.isEnabled() == false ||  principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         List<Long> followIds = firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.EVENT);
         if(followIds==null)
@@ -131,7 +145,7 @@ public class ProfileController {
     @RequestMapping(value = "getFollowOrganizers", method = RequestMethod.GET)
     public ResponseEntity<PageEntity<UserProfile>> getFollowedOrganizers(@AuthenticationPrincipal UserPrincipal principal,
                                                                @PageableDefault Pageable p) throws ExecutionException, InterruptedException {
-        if(principal==null || principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
+        if(principal==null || principal.isEnabled() == false || principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity<>(null, HttpStatus.FORBIDDEN);
         List<Long> followIds = firebaseService.getFollow(principal.getId(), FirebaseService.Issuer.ORGANIZER);
         if(followIds == null){
@@ -146,6 +160,8 @@ public class ProfileController {
         @NotBlank(message = "Name must not blank")
         @Size(min = 1, max = 50, message = "Name < 50")
         private String name;
+
+        public String role;
 
         @Email(message = "Not a valid email")
         @NotBlank(message = "Email must not blank")
@@ -172,6 +188,14 @@ public class ProfileController {
         private String summary;
 
         public ProfileForm() {
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public void setRole(String role) {
+            this.role = role;
         }
 
         public String getName() {

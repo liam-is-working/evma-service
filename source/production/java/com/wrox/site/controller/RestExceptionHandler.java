@@ -4,6 +4,7 @@ import com.wrox.config.annotation.RestEndpointAdvice;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.validation.ConstraintViolation;
@@ -23,6 +24,19 @@ public class RestExceptionHandler {
             ErrorItem error = new ErrorItem();
             error.setCode(violation.getMessageTemplate());
             error.setMessage(violation.getMessage());
+            errors.addError(error);
+        }
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({org.springframework.web.bind.MethodArgumentNotValidException.class})
+    public ResponseEntity<ErrorResponse> handle(MethodArgumentNotValidException e)
+    {
+        ErrorResponse errors = new ErrorResponse();
+        for(String errorField : e.getBindingResult().getSuppressedFields())
+        {
+            ErrorItem error = new ErrorItem();
+            error.setMessage(errorField);
             errors.addError(error);
         }
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);

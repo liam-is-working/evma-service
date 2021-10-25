@@ -62,12 +62,9 @@ public class UserPrincipalController
     }
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<Long> signup(@RequestBody @Valid SignupForm signupForm,
-                                       Errors error)
+    public ResponseEntity<Long> signup(@RequestBody @Valid SignupForm signupForm
+                                       )
     {
-        if(error.hasErrors())
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-
         UserPrincipal newUser = new UserPrincipal();
         newUser.setUsername(signupForm.signUsername);
         newUser.setEnabled(true);
@@ -118,6 +115,28 @@ public class UserPrincipalController
         long userId = ((UserPrincipal) authentication.getPrincipal()).getId();
         response.setProfile(profileService.fetchProfile(userId));
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(value = "/loginGG", method = RequestMethod.GET)
+    public String generateGGUrl(){
+        return null;
+    }
+
+    @RequestMapping(value = "/GGOAuthEndpoint", method = RequestMethod.POST)
+    public ResponseEntity<LoginResponse> loginWithGG(){
+        //validate
+
+        //send code to get token
+
+        //set SecurityContextHolder
+
+        //generate token wit JWT
+
+        //Get profile
+
+        //return profile
+
+        return null;
     }
 
     public static class LoginResponse{

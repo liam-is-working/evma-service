@@ -2,6 +2,7 @@ package com.wrox.config.bootstrap;
 
 import com.wrox.config.RestServletContextConfiguration;
 import com.wrox.config.RootContextConfiguration;
+import com.wrox.config.WebServletContextConfiguration;
 import com.wrox.site.CorsFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,12 @@ public class FrameworkBootstrap implements WebApplicationInitializer
         );
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/api/*");
+
+        AnnotationConfigWebApplicationContext mvcContext = new AnnotationConfigWebApplicationContext();
+        mvcContext.register(WebServletContextConfiguration.class);
+        dispatcher = container.addServlet("springWebServletDispatcher", new DispatcherServlet(mvcContext));
+        dispatcher.setLoadOnStartup(2);
+        dispatcher.addMapping("/");
 
         FilterRegistration.Dynamic registration = container.addFilter(
                 "CorsFilter", new CorsFilter()

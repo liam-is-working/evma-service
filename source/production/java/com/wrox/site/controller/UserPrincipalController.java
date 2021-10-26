@@ -120,6 +120,52 @@ public class UserPrincipalController
 //        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 //    }
 
+    @RequestMapping(value = "loginWithGoogleToken", method = RequestMethod.POST)
+    public ResponseEntity<LoginResponse> loginWithGG(@RequestParam String accessToken){
+        String url = "https://www.googleapis.com/oauth2/v1/userinfo?" + "access_token=" + accessToken;
+        RestTemplate template = new RestTemplate();
+        GGProfile profile = template.getForObject(url, GGProfile.class);
+
+        //check if email has been already created
+        UserPrincipal user;
+        user = userPrincipalService.loadUserByUsername(profile.email);
+
+        if(user==null){
+            SignupForm signupForm = new SignupForm();
+            signupForm.setName(profile.name);
+            signupForm.setEmail(profile.email);
+            signupForm.setSignUsername(profile.email);
+            //create new account, set 'enable' to handle different scenarios
+            signup(signupForm,true);
+            user = userPrincipalService.loadUserByUsername(profile.email);
+        }
+
+        //failed to create new account
+        if(user==null)
+            return new ResponseEntity(null, HttpStatus.EXPECTATION_FAILED);
+        if(!user.isEnabled()){
+            LoginResponse response = new LoginResponse();
+            response.setStatus("Unable");
+            return new ResponseEntity(response, HttpStatus.OK);
+        }
+
+
+        Authentication authentication = new PreAuthenticatedAuthenticationToken(user,
+                null, user.getAuthorities());
+        authentication.setAuthenticated(true);
+
+        // Set thông tin authentication vào Security Context
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // Trả về jwt cho người dùng.
+        String jwt = tokenProvider.generateToken((UserPrincipal) authentication.getPrincipal());
+        LoginResponse response = new LoginResponse();
+        response.setStatus("Login success");
+        response.setToken(jwt);
+        long userId = ((UserPrincipal) authentication.getPrincipal()).getId();
+        response.setProfile(profileService.fetchProfile(userId));
+        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+    }
 
     @RequestMapping(value = "GGOAuthEndpoint", method = RequestMethod.GET)
     public ResponseEntity googleOAuthEndpoint(@RequestParam(required = false) String code,

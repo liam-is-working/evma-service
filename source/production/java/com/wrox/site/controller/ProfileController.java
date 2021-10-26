@@ -75,14 +75,17 @@ public class ProfileController {
         boolean orgChangeName = false;
         String oldName = profile.getName();
         profile.setAddress(form.address);
-        if(form.role!=null){
-            //see if org change name
-            if("Event Organizer".equals(profile.getRole().getAuthority())&& !profile.getName().equals(form.name));
+
+        //see if org change name
+        if(profile.getRole() != null
+                && "Event Organizer".equals(profile.getRole().getAuthority())
+                && !profile.getName().equals(form.name));
             orgChangeName = true;
+        if(form.role!=null){
             //hardcoded
             //If update to these roles, account will be unable till admin approves
             if("Event Organizer".equals(form.role) || "Admin".equals(form.role)){
-                principal.setEnabled(false);
+                principal.setEnabled(true);
                 userPrincipalService.saveUser(principal, null, form.role);
             }else if("Attendees".equals(form.role)){
                 principal.setEnabled(true);

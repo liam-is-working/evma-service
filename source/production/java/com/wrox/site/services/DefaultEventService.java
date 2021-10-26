@@ -44,6 +44,11 @@ public class DefaultEventService implements EventService{
 
 
     @Override
+    public Page<Event> gettAllEvent(Pageable page) {
+        return events.findAll(page);
+    }
+
+    @Override
     @Transactional
     public Page<Event> getPublishedEvent(Pageable page) {
         return events.getEventByStatus(status.findEventStatusByName("Published"), page);

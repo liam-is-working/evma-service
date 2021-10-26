@@ -74,10 +74,11 @@ public class ProfileController {
         //Notify flag
         boolean orgChangeName = false;
         String oldName = profile.getName();
-        if("Event Organizer".equals(profile.getRole().getAuthority())&& !profile.getName().equals(form.name));
-            orgChangeName = true;
         profile.setAddress(form.address);
         if(form.role!=null){
+            //see if org change name
+            if("Event Organizer".equals(profile.getRole().getAuthority())&& !profile.getName().equals(form.name));
+            orgChangeName = true;
             //hardcoded
             //If update to these roles, account will be unable till admin approves
             if("Event Organizer".equals(form.role) || "Admin".equals(form.role)){

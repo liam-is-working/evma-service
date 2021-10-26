@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 @Validated
 public interface EventService {
+     Page<Event> gettAllEvent(Pageable page);
      Page<Event> getPublishedEvent(Pageable page);
      Event getEventDetail(long eventId);
      Event saveEvent(@Valid Event event, Set<Long> categories, int status);

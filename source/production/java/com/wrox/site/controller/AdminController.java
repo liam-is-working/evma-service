@@ -11,4 +11,9 @@ public class AdminController {
     public String test(){
         return "test";
     }
+
+//    @RequestMapping(value = "login", method = RequestMethod.GET)
+//    public String login(){
+//
+//    }
 }

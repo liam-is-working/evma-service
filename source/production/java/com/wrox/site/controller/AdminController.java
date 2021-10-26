@@ -1,11 +1,13 @@
 package com.wrox.site.controller;
 
+import com.wrox.config.annotation.WebController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-@Controller
+@WebController
 public class AdminController {
-    @RequestMapping(value = "test")
+    @RequestMapping(value = "test", method = RequestMethod.GET)
     public String test(){
         return "test";
     }

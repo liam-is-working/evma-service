@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import java.time.Instant;
 
 @Validated
 public interface PostService {

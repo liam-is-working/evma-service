@@ -24,7 +24,6 @@ public class Event implements Serializable {
     @Size(max = 50, message = "title size <= 50")
     private String title;
 
-
     private Set<Category> categories;
 
     private Set<String> tags;

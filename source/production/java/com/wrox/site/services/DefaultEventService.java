@@ -42,6 +42,7 @@ public class DefaultEventService implements EventService{
     @Inject
     FirebaseService firebaseService;
 
+
     @Override
     @Transactional
     public Page<Event> getPublishedEvent(Pageable page) {
@@ -71,6 +72,8 @@ public class DefaultEventService implements EventService{
         }
 
         EventStatus eventStatus = status.findOne(statusId);
+        if(eventStatus == null)
+            eventStatus = status.findEventStatusByName("Draft");
         event.setStatus(eventStatus);
         events.save(event);
         if(event.getCoverURL() == null){
@@ -95,14 +98,8 @@ public class DefaultEventService implements EventService{
     }
 
     @Override
-    public Page<Event> searchEvent(SearchCriteria criteria, Pageable p) {
-        return events.searchEvent(criteria, p);
-    }
-
-    @Override
     public Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
                                    Set<String> tagSet, Instant startDate, Instant endDate, Pageable p) {
-
         return events.searchEvent(title, categorySet, nameSet, tagSet, startDate
                 , endDate, p,status.findEventStatusByName("Published"));
     }

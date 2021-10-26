@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+
 @Repository
 public interface PostRepository extends PagingAndSortingRepository<Post, Long> {
     public Page<Post> getPostByEventId(long eventId, Pageable p);

@@ -105,28 +105,28 @@ public class ProfileController {
     @RequestMapping(value = "followEvent", method = RequestMethod.GET)
     public ResponseEntity followEvent(@AuthenticationPrincipal UserPrincipal principal,
                                       @RequestParam long eventId) throws ExecutionException, InterruptedException {
-        if(principal == null || principal.isEnabled() == false)
+        if(principal == null || principal.isEnabled() == false ||  principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), eventId, FirebaseService.FollowOperation.FOLLOW_EVENT), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "unfollowEvent", method = RequestMethod.GET)
     public ResponseEntity unfollowEvent(@AuthenticationPrincipal UserPrincipal principal,
                                         @RequestParam long eventId) throws ExecutionException, InterruptedException {
-        if(principal == null || principal.isEnabled() == false)
+        if(principal == null || principal.isEnabled() == false ||  principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), eventId, FirebaseService.FollowOperation.UNFOLLOW_EVENT), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "followOrganizer", method = RequestMethod.GET)
     public ResponseEntity followOrganizer(@AuthenticationPrincipal UserPrincipal principal,
                                           @RequestParam long organizerId) throws ExecutionException, InterruptedException {
-        if(principal == null || principal.isEnabled() == false)
+        if(principal == null || principal.isEnabled() == false ||  principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), organizerId, FirebaseService.FollowOperation.FOLLOW_ORGANIZER), HttpStatus.ACCEPTED);
     }
     @RequestMapping(value = "unfollowOrganizer", method = RequestMethod.GET)
     public ResponseEntity unfollowOrganizer(@AuthenticationPrincipal UserPrincipal principal,
                                             @RequestParam long organizerId) throws ExecutionException, InterruptedException {
-        if(principal == null || principal.isEnabled() == false)
+        if(principal == null || principal.isEnabled() == false ||  principal.getAuthorities().stream().noneMatch(r -> r.getAuthority().equals("Attendees")))
             return new ResponseEntity(null, HttpStatus.FORBIDDEN);
         return new ResponseEntity(firebaseService.followEvent(principal.getId(), organizerId, FirebaseService.FollowOperation.UNFOLLOW_ORGANIZER), HttpStatus.ACCEPTED);
     }

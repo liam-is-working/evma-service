@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DefaultCategoryService implements CategoryService{
@@ -18,12 +20,33 @@ public class DefaultCategoryService implements CategoryService{
     }
 
     @Override
-    public List<Category> getAll() {
+    public Set<Category> getAll() {
         Iterable<Category> result = categories.findAll();
-        List<Category> list = new ArrayList<>();
+        Set<Category> list = new HashSet<>();
         for(Category c : result){
             list.add(c);
         }
         return list;
+    }
+
+    @Override
+    public Set<Category> getByIds(Iterable<Long> ids, boolean enable) {
+        return categories.getByIdInAndStatusIs(ids, enable);
+    }
+
+
+    @Override
+    public Category getByName(String catName) {
+        return categories.getByName(catName);
+    }
+
+    @Override
+    public Set<Category> getAvailable() {
+        return categories.getByStatus(true);
+    }
+
+    @Override
+    public Category save(Category c) {
+        return categories.save(c);
     }
 }

@@ -13,4 +13,5 @@ import java.util.List;
 public interface UserProfileRepository extends PagingAndSortingRepository<UserProfile, Long> {
     public Page<UserProfile> getByRole(UserAuthority role, Pageable p);
     public Page<UserProfile> getByRoleAndIdIn(UserAuthority role, Pageable p, List<Long> ids);
+    Page <UserProfile> getByRoleAndNameContaining(UserAuthority role, Pageable p, String name);
 }

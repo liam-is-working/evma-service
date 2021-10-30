@@ -45,4 +45,9 @@ public class DefaultProfileService implements ProfileService{
     public Page<UserProfile> fetchOrganizers(Pageable p, List<Long> ids) {
         return userProfile.getByRoleAndIdIn(authority.getByAuthority("Event Organizer"), p, ids );
     }
+
+    @Override
+    public Page<UserProfile> searchOrgByName(String name, Pageable p) {
+        return userProfile.getByRoleAndNameContaining(authority.getByAuthority("Event Organizer"),p, name );
+    }
 }

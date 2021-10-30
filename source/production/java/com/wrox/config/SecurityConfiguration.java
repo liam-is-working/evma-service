@@ -25,6 +25,10 @@ import java.util.logging.Filter;
 
 @Configuration
 @EnableWebMvcSecurity
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true, order = 0, mode = AdviceMode.PROXY,
+        proxyTargetClass = false
+)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter
 {
     @Inject
@@ -67,7 +71,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
     protected void configure(HttpSecurity security) throws Exception
     {
         security.csrf().disable()
-                .authorizeRequests().antMatchers("/").authenticated();
+                .authorizeRequests().antMatchers("/admin/*").hasAuthority("Administrator")
+                .and().formLogin()
+                .loginPage("/admin/login").failureUrl("/admin/login?loginFailed")
+                .defaultSuccessUrl("/admin/events")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .permitAll()
+                .and().logout()
+                .logoutUrl("/admin/logout").logoutSuccessUrl("/admin/login?loggedOut")
+                .invalidateHttpSession(true).deleteCookies("JSESSIONID")
+                .permitAll();
         security.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }

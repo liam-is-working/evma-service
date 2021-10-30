@@ -2,6 +2,7 @@ package com.wrox.site.entities;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wrox.site.validation.Name;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,9 +14,10 @@ import java.util.List;
         isGetterVisibility = JsonAutoDetect.Visibility.NONE,
         setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Entity
-public class Category implements Serializable {
+public class Category implements Serializable, Comparable<Category>{
 
     private long id;
+    @Name
     private String name;
     private boolean status;
 
@@ -49,5 +51,10 @@ public class Category implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public int compareTo(Category o) {
+        return (this.id-o.getId())>0?0:-1;
     }
 }

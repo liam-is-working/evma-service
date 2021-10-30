@@ -4,18 +4,14 @@ import com.wrox.site.entities.UserAuthority;
 import com.wrox.site.entities.UserPrincipal;
 import com.wrox.site.repositories.UserAuthorityRepository;
 import com.wrox.site.repositories.UserPrincipalRepository;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
@@ -73,6 +69,39 @@ public class DefaultUserPrincipalService implements UserPrincipalService{
 
     @Override
     public UserDetails loadUserById(Long userId) {
+        return userRepository.findOne(userId);
+    }
+
+    @Override
+    public Page<UserPrincipal> loadAllUser(Pageable p) {
+        return userRepository.findAll(p);
+    }
+
+    @Override
+    public Page<UserPrincipal> loadUserByUsername(String name, Pageable p) {
+        return userRepository.getUserPrincipalByUsernameLike(name, p);
+    }
+
+    @Override
+    public Page<UserPrincipal> loadUsers(Pageable p, boolean enable) {
+        return userRepository.getUserPrincipalByEnabled(enable, p);
+    }
+
+
+
+    @Override
+    public UserPrincipal switchState(long userId) {
+        UserPrincipal user = userRepository.findOne(userId);
+        if(user!=null){
+            user.setEnabled(!user.isEnabled());
+            return userRepository.save(user);
+        }
+        return null;
+
+    }
+
+    @Override
+    public UserPrincipal loadUser(Long userId) {
         return userRepository.findOne(userId);
     }
 }

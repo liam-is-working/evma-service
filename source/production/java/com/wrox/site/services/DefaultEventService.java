@@ -94,6 +94,11 @@ public class DefaultEventService implements EventService{
     }
 
     @Override
+    public Page<Event> getAllEvents(Pageable p, long ownerId) {
+        return events.getEventByUserProfileId(ownerId, p);
+    }
+
+    @Override
     public Page<Event> getEventByStatus(String statusName,long ownerId, Pageable p) {
         EventStatus s = status.findEventStatusByName(statusName);
         if(s == null)
@@ -115,8 +120,13 @@ public class DefaultEventService implements EventService{
     }
 
     @Override
+    public Event saveEvent(Event event) {
+        return events.save(event);
+    }
+
+    @Override
     @Async
-    @Scheduled(cron = "* */10 * * * *")
+    @Scheduled(cron = "0 0/10 * * * *")
     public void notifySoonHappenEvents() throws ExecutionException, InterruptedException {
         ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
         Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC);

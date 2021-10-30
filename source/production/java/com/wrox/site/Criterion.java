@@ -3,6 +3,7 @@ package com.wrox.site;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
 public class Criterion
@@ -16,6 +17,7 @@ public class Criterion
         this.propertyName = propertyName;
         this.operator = operator;
         this.compareTo = compareTo;
+
     }
 
     public String getPropertyName()

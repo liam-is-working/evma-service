@@ -77,9 +77,9 @@ public class ProfileController {
         profile.setAddress(form.address);
 
         //see if org change name
-        if(profile.getRole() != null
+        if(profile.getRole() != null && form.name !=null
                 && "Event Organizer".equals(profile.getRole().getAuthority())
-                && !profile.getName().equals(form.name));
+                && !profile.getName().equalsIgnoreCase(form.name))
             orgChangeName = true;
         if(form.role!=null){
             //hardcoded
@@ -160,6 +160,13 @@ public class ProfileController {
             return new ResponseEntity<>(new PageEntity<>(resultPage), HttpStatus.OK);
 
     }
+    @RequestMapping(value = "profiles/searchOrganizers", method = RequestMethod.GET)
+    public ResponseEntity<PageEntity<UserProfile>> searchOrganizer(@RequestParam String orgName,
+                                                                   @PageableDefault Pageable p){
+        Page<UserProfile> profilePage = profileService.searchOrgByName(orgName, p);
+        return new ResponseEntity<>(new PageEntity<>(profilePage), HttpStatus.OK);
+    }
+
     public static class ProfileForm implements Serializable {
         @NotBlank(message = "Name must not blank")
         @Size(min = 1, max = 50, message = "Name < 50")

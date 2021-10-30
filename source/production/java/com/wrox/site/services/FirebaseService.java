@@ -115,6 +115,7 @@ public class FirebaseService {
         CANCEL_EVENT(false),
         DELETE_EVENT(false),
         ADD_EVENT(true),
+        POSTPONE_EVENT(false),
         CHANGE_ORGANIZER_NAME(true),
         START_SOON(false),
         START_TODAY(false);
@@ -203,6 +204,9 @@ public class FirebaseService {
                     int minute = event.getStartDate().atZone(ZoneOffset.UTC).getMinute();
                     return sb.append(eventTitle).append(" will start soon at ")
                             .append(hour).append(":").append(minute).toString();
+                }
+                case POSTPONE_EVENT:{
+                    return sb.append(eventTitle).append(" has been postponed").toString();
                 }
                 case START_TODAY:
                     return sb.append(eventTitle).append(" will start today").toString();

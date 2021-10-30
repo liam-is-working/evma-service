@@ -22,11 +22,13 @@ public interface EventService {
      Event getEventDetail(long eventId);
      Event saveEvent(@Valid Event event, Set<Long> categories, int status);
      Page<Event> getPublishedEvent(long ownerId, Pageable p);
+     Page<Event> getAllEvents(Pageable p, long ownerId);
      Page<Event> getEventByStatus(String statusName,long ownerId, Pageable p);
      //Page<Event> searchEvent(SearchCriteria criteria, Pageable p);
      Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
                              Set<String> tagSet, Instant startDate, Instant endDate, Pageable p);
      Page<Event> getFollowedEvent(List<Long> ids, Pageable p);
+     Event saveEvent(Event event);
 
      void notifySoonHappenEvents() throws ExecutionException, InterruptedException;
      void notifyTodayHappenEvents() throws ExecutionException, InterruptedException;

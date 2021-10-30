@@ -53,7 +53,7 @@ public class EventController {
         Event event = eventService.getEventDetail(eventId);
         if (event==null)
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        if(!"Published".equals(event.getStatus().getName())){
+        if(!"Published".equals(event.getStatus().getName()) && !"Cancelled".equals(event.getStatus().getName())){
             if(principal==null || principal.isEnabled() == false ||
                     (principal.getId()!=event.getUserProfileId()&&
                             principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
@@ -96,8 +96,8 @@ public class EventController {
     }
 
     @RequestMapping(value = "events/categories", method = RequestMethod.GET)
-    public ResponseEntity<List<Category>> getCategories(){
-        return new ResponseEntity<>(categoryService.getAll(), HttpStatus.OK);
+    public ResponseEntity<Set<Category>> getCategories(){
+        return new ResponseEntity<>(categoryService.getAvailable(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "events/byCategory/{catId}", method = RequestMethod.GET)
@@ -180,6 +180,13 @@ public class EventController {
         if(changeStat ==null)
             return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
 
+        //Check if action is valid
+        if("Deleted".equals(changeStat.getName()) || "Cancelled".equals(changeStat.getName())){
+            ChangeEventStateMessage message = new ChangeEventStateMessage(event.getStatus().getName(),
+                    changeStat.getName(),"Invalid state change");
+            return new ResponseEntity(message, HttpStatus.CONFLICT);
+        }
+
         //Notification flag
         FirebaseService.NotificationTrigger trigger = null;
         boolean switchState = false;
@@ -189,6 +196,8 @@ public class EventController {
             switchState = true;
             if(changeStat.getName().equals("Cancelled"))
                 trigger = FirebaseService.NotificationTrigger.CANCEL_EVENT;
+            if(changeStat.getName().equals("Draft"))
+                trigger = FirebaseService.NotificationTrigger.POSTPONE_EVENT;
             if(changeStat.getName().equals("Deleted"))
                 trigger = FirebaseService.NotificationTrigger.DELETE_EVENT;
             if(trigger == null)
@@ -208,6 +217,18 @@ public class EventController {
             firebaseService.notify(event.getUserProfileId(),trigger, FirebaseService.Issuer.ORGANIZER, null);
         }
         return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
+
+    public static class ChangeEventStateMessage{
+        public String currentStatus;
+        public String targetStatus;
+        public String message;
+
+        public ChangeEventStateMessage(String currentStatus, String targetStatus, String message) {
+            this.currentStatus = currentStatus;
+            this.targetStatus = targetStatus;
+            this.message = message;
+        }
     }
 
     //url events/byOrganizer/a/published
@@ -232,7 +253,7 @@ public class EventController {
                                                     @PageableDefault Pageable p){
         //get searched categories
         final Set<Category> categorySet = new HashSet<>();
-        List<Category> categories = categoryService.getAll();
+        Set<Category> categories = categoryService.getAll();
         Map<Long, Category> categoryMap = categories.stream().collect(Collectors.toMap(Category::getId, c-> c));
         if(form.categories != null){
             form.categories.stream().forEach(id -> categorySet.add((Category) categoryMap.get(id)));

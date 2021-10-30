@@ -96,16 +96,16 @@ public class EventRepositoryImpl implements CustomEventRepository{
         if(startDate!=null || endDate!=null){
             if(startDate != null && endDate != null){
                 allPredicates.add(cb.between(root.get("startDate"),
-                        startDate.truncatedTo(ChronoUnit.HOURS),
-                        endDate.truncatedTo(ChronoUnit.HOURS)));
+                        startDate.truncatedTo(ChronoUnit.DAYS),
+                        endDate.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MINUTES)));
             }else if(startDate == null){
                 allPredicates.add(cb.between(root.get("endDate"),
-                        endDate.truncatedTo(ChronoUnit.HOURS),
-                        endDate.plus(1,ChronoUnit.DAYS)));
+                        endDate.truncatedTo(ChronoUnit.DAYS),
+                        endDate.truncatedTo(ChronoUnit.DAYS).plus(1,ChronoUnit.DAYS).minus(1, ChronoUnit.MINUTES)));
             }else {
                 allPredicates.add(cb.between(root.get("startDate"),
-                        startDate.truncatedTo(ChronoUnit.HOURS),
-                        startDate.truncatedTo(ChronoUnit.HOURS).plus(1, ChronoUnit.DAYS)));
+                        startDate.truncatedTo(ChronoUnit.DAYS),
+                        startDate.truncatedTo(ChronoUnit.DAYS).plus(1, ChronoUnit.DAYS).minus(1, ChronoUnit.MINUTES)));
             }
         }
 

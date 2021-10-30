@@ -1,13 +1,13 @@
 package com.wrox.site.services;
 
 import com.wrox.site.entities.UserPrincipal;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Validated
 public interface UserPrincipalService extends UserDetailsService {
@@ -20,4 +20,17 @@ public interface UserPrincipalService extends UserDetailsService {
     );
 
     UserDetails loadUserById(Long userId);
+
+    Page<UserPrincipal> loadAllUser(Pageable p);
+
+    Page<UserPrincipal> loadUserByUsername(String name, Pageable p);
+
+    Page<UserPrincipal> loadUsers(Pageable p, boolean enable);
+
+    UserPrincipal switchState(long userId);
+
+    UserPrincipal loadUser(Long userId);
+
+
+
 }

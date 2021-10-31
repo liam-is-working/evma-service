@@ -126,7 +126,7 @@ public class DefaultEventService implements EventService{
 
     @Override
     @Async
-    @Scheduled(cron = "0 0/10 * * * *")
+    @Scheduled(cron = "0 */10 * * * *")
     public void notifySoonHappenEvents() throws ExecutionException, InterruptedException {
         ZoneId HCMzone = ZoneId.of("Asia/Ho_Chi_Minh");
         Instant below = LocalDateTime.now(HCMzone).toInstant(ZoneOffset.UTC);

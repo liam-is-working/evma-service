@@ -91,7 +91,8 @@ public class EventController {
             newEvent.setOrganizerNames(eventForm.organizerNames);
             newEvent.setUserProfileId(principal.getId());
             newEvent = eventService.saveEvent(newEvent, eventForm.categoryIds, eventForm.statusId);
-            firebaseService.notify(principal.getId(), FirebaseService.NotificationTrigger.ADD_EVENT, FirebaseService.Issuer.ORGANIZER,null);
+            if("Published".equals(newEvent.getStatus().getName()))
+                firebaseService.notify(principal.getId(), FirebaseService.NotificationTrigger.ADD_EVENT, FirebaseService.Issuer.ORGANIZER,null);
             return new ResponseEntity<>(newEvent, HttpStatus.CREATED);
     }
 
@@ -139,6 +140,9 @@ public class EventController {
         boolean updateTitle = !editedEvent.getTitle().equals(eventForm.title);
         String oldTitle = editedEvent.getTitle();
 
+        if(editedEvent.getStatus().getId() != eventForm.getStatusId())
+            updateEventStatus(editedEvent, eventForm.statusId);
+
         editedEvent.setOnline(eventForm.online);
         editedEvent.setContent(eventForm.content);
         editedEvent.setSummary(eventForm.summary);
@@ -175,16 +179,18 @@ public class EventController {
                 (principal.getId()!=event.getUserProfileId()&&
                         principal.getAuthorities().stream().noneMatch(r -> "Admin".equals(r.getAuthority()))))
             return new ResponseEntity(HttpStatus.FORBIDDEN);
+        updateEventStatus(event, form.statusId);
+        return new ResponseEntity(HttpStatus.ACCEPTED);
+    }
 
-        EventStatus changeStat = eventStatusService.getStatus(form.statusId);
+    private void updateEventStatus(Event event, int statusId) throws ExecutionException, InterruptedException {
+        EventStatus changeStat = eventStatusService.getStatus(statusId);
         if(changeStat ==null)
-            return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+            return;
 
         //Check if action is valid
-        if("Deleted".equals(changeStat.getName()) || "Cancelled".equals(changeStat.getName())){
-            ChangeEventStateMessage message = new ChangeEventStateMessage(event.getStatus().getName(),
-                    changeStat.getName(),"Invalid state change");
-            return new ResponseEntity(message, HttpStatus.CONFLICT);
+        if("Deleted".equals(event.getStatus().getName()) || "Cancelled".equals(event.getStatus().getName())){
+            return;
         }
 
         //Notification flag
@@ -203,20 +209,20 @@ public class EventController {
             if(trigger == null)
                 switchState = false;
         }
-        //From other status to Published
+        //From Draft status to Published
         if(changeStat.getName().equals("Published") && event.getStatus().getName().equals("Draft")){
             addNew = true;
             trigger = FirebaseService.NotificationTrigger.ADD_EVENT;
         }
 
-        eventService.saveEvent(event,null,form.getStatusId());
+        event.setStatus(changeStat);
+        eventService.saveEvent(event);
         if(switchState){
             firebaseService.notify(event.getId(),trigger, FirebaseService.Issuer.EVENT,null);
         }
         if(addNew){
             firebaseService.notify(event.getUserProfileId(),trigger, FirebaseService.Issuer.ORGANIZER, null);
         }
-        return new ResponseEntity(HttpStatus.ACCEPTED);
     }
 
     public static class ChangeEventStateMessage{

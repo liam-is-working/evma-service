@@ -1,0 +1,20 @@
+<!--
+  Created by IntelliJ IDEA.
+  User: ACER
+  Date: 10/29/2021
+  Time: 8:16 PM
+  To change this template use File | Settings | File Templates.
+-->
+<c:url context="/support/admin" value="/categories" var="catURL"/>
+<c:url context="/support/admin" value="/events" var="eventURL"/>
+<c:url context="/support/admin" value="/accounts" var="accountURL"/>
+<c:url context="/support/admin" value="/logout" var="logoutURL"/>
+    <div class="header-panel">
+        <ul>
+           <li><a href="${catURL}">Category</a></li>
+            <li><a href="${eventURL}">Event</a></li>
+            <li><a href="${accountURL}">Account</a></li>
+            <li><a href="${logoutURL}">Logout</a></li>
+        </ul>
+    </div>
+

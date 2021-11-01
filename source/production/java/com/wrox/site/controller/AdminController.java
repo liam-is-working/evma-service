@@ -6,6 +6,7 @@ import com.wrox.site.services.*;
 import com.wrox.site.validation.Name;
 import com.wrox.site.validation.NotBlank;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,8 +22,8 @@ import org.springframework.web.servlet.view.RedirectView;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @WebController
 //@RequestMapping(value = "admin")
@@ -117,8 +118,13 @@ public class AdminController {
     @RequestMapping(value = "admin/switchAccountState", method = RequestMethod.GET)
     public String switchAccountState(@RequestParam long userId,
                                            ModelMap model,
-                                     @PageableDefault Pageable p){
-        UserPrincipal user = userPrincipalService.switchState(userId) ;
+                                     @PageableDefault Pageable p,
+                                     @AuthenticationPrincipal UserPrincipal principal){
+        UserPrincipal user = userPrincipalService.loadUser(userId);
+        if(user==null)
+            return getAccounts(model, p, null);
+        if(principal.getId() != userId)
+             user = userPrincipalService.switchState(userId) ;
         return findAccount(model, p, user.getUsername());
     }
 
@@ -137,8 +143,10 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/getEventById", method = RequestMethod.GET)
-    public String search(@RequestParam long eventId,
+    public String search(@RequestParam(required = false) Long eventId,
                          ModelMap model){
+        if(eventId==null)
+            return getAllEvents(model, new PageRequest(0,10));
         model.put("eventDetail", eventService.getEventDetail(eventId));
         return "admin/events";
     }
@@ -197,7 +205,13 @@ public class AdminController {
 
     @RequestMapping(value = "admin/categories", method = RequestMethod.GET)
     public String listCategories(ModelMap model){
-        model.addAttribute("categories", categoryService.getAll());
+        Set<Category> categorySet = categoryService.getAll();
+        List<Category> categoryList = null;
+        if(categorySet!=null){
+            categoryList = categorySet.stream().collect(Collectors.toList());
+            Collections.sort(categoryList);
+        }
+        model.addAttribute("categories", categoryList);
         return "admin/categories";
     }
 

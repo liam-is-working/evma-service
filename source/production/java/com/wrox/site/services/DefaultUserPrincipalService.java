@@ -41,7 +41,7 @@ public class DefaultUserPrincipalService implements UserPrincipalService{
     @Transactional
     public UserPrincipal loadUserByUsername(String username)
     {
-        return userRepository.getUserPrincipalByUsername(username);
+        return userRepository.getUserPrincipalByUsernameEquals(username);
     }
 
     @Override

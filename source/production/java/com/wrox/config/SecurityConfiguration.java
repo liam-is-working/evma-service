@@ -56,9 +56,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter
     {
         builder
                 .userDetailsService(this.userService)
-                .passwordEncoder(new BCryptPasswordEncoder());
-//                .and()
-//                .eraseCredentials(true);
+                .passwordEncoder(new BCryptPasswordEncoder())
+                .and()
+                .eraseCredentials(true);
     }
 
 //    @Override

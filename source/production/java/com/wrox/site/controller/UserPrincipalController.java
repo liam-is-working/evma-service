@@ -493,6 +493,11 @@ public class UserPrincipalController
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    @RequestMapping(value = "test", method = RequestMethod.GET)
+    public ResponseEntity test(@RequestParam String username){
+        return new ResponseEntity(userPrincipalService.loadUserByUsername(username), HttpStatus.ACCEPTED);
+    }
+
     public static class SignupForm{
         @NotBlank
         @NotNull

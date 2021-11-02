@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 

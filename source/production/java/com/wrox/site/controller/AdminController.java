@@ -1,7 +1,10 @@
 package com.wrox.site.controller;
 
 import com.wrox.config.annotation.WebController;
-import com.wrox.site.entities.*;
+import com.wrox.site.entities.Category;
+import com.wrox.site.entities.Event;
+import com.wrox.site.entities.EventStatus;
+import com.wrox.site.entities.UserPrincipal;
 import com.wrox.site.services.*;
 import com.wrox.site.validation.Name;
 import com.wrox.site.validation.NotBlank;
@@ -9,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.Errors;
@@ -22,7 +24,10 @@ import org.springframework.web.servlet.view.RedirectView;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @WebController

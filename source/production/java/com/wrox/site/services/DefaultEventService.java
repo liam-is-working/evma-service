@@ -1,6 +1,5 @@
 package com.wrox.site.services;
 
-import com.wrox.site.SearchCriteria;
 import com.wrox.site.entities.Category;
 import com.wrox.site.entities.Event;
 import com.wrox.site.entities.EventStatus;
@@ -22,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

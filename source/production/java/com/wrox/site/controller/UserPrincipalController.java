@@ -2,45 +2,26 @@ package com.wrox.site.controller;
 
 import com.google.firebase.auth.*;
 import com.wrox.config.annotation.RestEndpoint;
-import com.wrox.config.annotation.WebController;
-import com.wrox.site.entities.*;
+import com.wrox.site.entities.UserPrincipal;
+import com.wrox.site.entities.UserProfile;
 import com.wrox.site.services.JwtTokenProvider;
 import com.wrox.site.services.ProfileService;
 import com.wrox.site.services.RoleService;
 import com.wrox.site.services.UserPrincipalService;
-import com.wrox.site.validation.Email;
 import com.wrox.site.validation.NotBlank;
-import javafx.geometry.Pos;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-import java.sql.SQLException;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
 
 @RestEndpoint
 public class UserPrincipalController

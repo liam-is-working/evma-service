@@ -17,13 +17,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import javax.inject.Inject;
-import javax.persistence.Convert;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.Size;
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 

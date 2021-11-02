@@ -1,0 +1,9 @@
+<Context>
+    <Resource
+            name="jdbc/EVMADb"
+            auth="Container"
+            type="javax.sql.DataSource"
+            driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+            url="jdbc:sqlserver://evma.database.windows.net:1433;database=EVMA;user=lamnvse151336@evma;password=l@mnvse151336;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
+    />
+</Context>

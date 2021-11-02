@@ -9,7 +9,7 @@
         <unpackNestedArchives>false</unpackNestedArchives>
       </options>
     </properties>
-    <root id="archive" name="customer-support-20.0.0-SNAPSHOT.war">
+    <root id="archive" name="evma.war">
       <element id="artifact" artifact-name="Customer-Support-v20:war exploded" />
     </root>
   </artifact>

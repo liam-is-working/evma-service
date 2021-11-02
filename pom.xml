@@ -376,6 +376,7 @@
                 <version>2.3</version>
                 <configuration>
                     <warSourceDirectory>web</warSourceDirectory>
+                    <warName>evma</warName>
                 </configuration>
             </plugin>
             <plugin>

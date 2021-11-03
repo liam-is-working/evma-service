@@ -26,7 +26,7 @@
     <b> Login failed</b>
 </c:if>
     <br />
-<c:url context="/support" value="/signup" var="signupURL"/>
+<c:url context="${pageContext.request.contextPath}" value="/signup" var="signupURL"/>
 <a href="${signupURL}">Signup</a>
 </body>
 </html>

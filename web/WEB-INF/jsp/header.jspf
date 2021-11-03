@@ -5,10 +5,10 @@
   Time: 8:16 PM
   To change this template use File | Settings | File Templates.
 -->
-<c:url context="/support/admin" value="/categories" var="catURL"/>
-<c:url context="/support/admin" value="/events" var="eventURL"/>
-<c:url context="/support/admin" value="/accounts" var="accountURL"/>
-<c:url context="/support/admin" value="/logout" var="logoutURL"/>
+<c:url context="${pageContext.request.contextPath}" value="/admin/categories" var="catURL"/>
+<c:url context="${pageContext.request.contextPath}" value="/admin/events" var="eventURL"/>
+<c:url context="${pageContext.request.contextPath}" value="/admin/accounts" var="accountURL"/>
+<c:url context="${pageContext.request.contextPath}" value="/admin/logout" var="logoutURL"/>
     <div class="header-panel">
         <ul>
            <li><a href="${catURL}">Category</a></li>

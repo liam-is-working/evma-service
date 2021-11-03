@@ -17,9 +17,9 @@
     <input placeholder="EMAIL" type="text" name="name" value="${param.name}" />
     <input type="submit" value="Search by email" />
 </form>
-<c:url context="/support/admin" value="/accounts" var="getAllURL"/>
-<c:url context="/support/admin" value="/accounts?enable=true" var="getEnableURL"/>
-<c:url context="/support/admin" value="/accounts?enable=false" var="getUnableURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/accounts" var="getAllURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=true" var="getEnableURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=false" var="getUnableURL"/>
 <a href="${getAllURL}">Get all accounts</a>
 <a href="${getEnableURL}">Get enable accounts</a>
 <a href="${getUnableURL}">Get unable accounts</a>
@@ -38,7 +38,7 @@
         </thead>
         <tbody>
         <c:forEach items="${accountPage.content}" var="acc">
-            <c:url context="/support/admin" value="/switchAccountState?userId=${acc.id}" var="switchStateURL"/>
+            <c:url context="${pageContext.request.contextPath}/admin" value="/switchAccountState?userId=${acc.id}" var="switchStateURL"/>
             <tr>
                 <td>${acc.id}</td>
                 <td>${acc.username}</td>
@@ -55,17 +55,17 @@
         Current page: ${accountPage.number}
     </p>
     <c:if test="${accountPage.hasPreviousPage()}">
-        <c:url context="/support/admin" value="/accounts?enable=${param.enable}&page=${accountPage.number-1}" var="prePageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=${param.enable}&page=${accountPage.number-1}" var="prePageURL" />
         <a href="${prePageURL}">Prev</a>
     </c:if>
     <c:if test="${accountPage.hasNextPage()}">
-        <c:url context="/support/admin" value="/accounts?enable=${param.enable}&page=${accountPage.number+1}" var="nextPageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=${param.enable}&page=${accountPage.number+1}" var="nextPageURL" />
         <a href="${nextPageURL}">Next</a>
     </c:if>
     <br>
-    <c:url context="/support/admin" value="/accounts?enable=${param.enable}&page=0" var="firstPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=${param.enable}&page=0" var="firstPage" />
     <a href="${firstPage}">First page</a>
-    <c:url context="/support/admin" value="/accounts?enable=${param.enable}&page=${accountPage.totalPages-1}" var="lastPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/accounts?enable=${param.enable}&page=${accountPage.totalPages-1}" var="lastPage" />
     <a href="${lastPage}">Last page</a>
 </c:if>
 </body>

@@ -20,7 +20,7 @@
     <input type="submit" value="SIGNUP">
 </form>
 <b>${signupMessage}</b>
-<c:url context="/support/admin" value="/login" var="loginURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/login" var="loginURL"/>
 <a href="${loginURL}">Log in</a>
 </body>
 </html>

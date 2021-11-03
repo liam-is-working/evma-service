@@ -17,7 +17,7 @@
     <input placeholder="CATEGORY NAME" type="text" name="categoryName" />
     <input type="submit" value="ADD NEW CATEGORY" />
 </form>
-<c:url context="/support/admin" value="/categories" var="getAllURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/categories" var="getAllURL"/>
 <a href="${getAllURL}">Get all categories</a>
 <br>
 <b>${addCategoryError}</b>
@@ -34,7 +34,7 @@
         </thead>
         <tbody>
         <c:forEach items="${categories}" var="cat">
-            <c:url context="/support/admin" value="/switchCategoryState?categoryId=${cat.id}" var="switchStateURL"/>
+            <c:url context="${pageContext.request.contextPath}/admin" value="/switchCategoryState?categoryId=${cat.id}" var="switchStateURL"/>
             <tr>
                 <td>${cat.id}</td>
                 <td>${cat.name}</td>

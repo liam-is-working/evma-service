@@ -17,7 +17,7 @@
     <input type="text" placeholder="ORGANIZER ID" name="organizerId" value="${param.organizerId}">
     <input type="submit" value="SEARCH BY ORGANIZER ID" />
 </form>
-<c:url context="/support/admin" value="/events" var="getAllURL"/>
+<c:url context="${pageContext.request.contextPath}/admin" value="/events" var="getAllURL"/>
 <a href="${getAllURL}">Get all events</a>
 <br>
 <c:if test="${empty eventPage.content}">
@@ -36,7 +36,7 @@
         </thead>
         <tbody>
         <c:forEach items="${eventPage.content}" var="ev">
-            <c:url context="/support/admin" value="/deleteEvent?eventId=${ev.id}" var="deleteURL"/>
+            <c:url context="${pageContext.request.contextPath}/admin" value="/deleteEvent?eventId=${ev.id}" var="deleteURL"/>
             <tr>
                 <td>${ev.id}</td>
                 <td>${ev.userProfileId}</td>
@@ -57,39 +57,39 @@
 
     <c:if test="${param.organizerId != null}">
         <c:if test="${eventPage.hasPreviousPage()}">
-            <c:url context="/support/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.number-1}" var="prePageURL" />
+            <c:url context="${pageContext.request.contextPath}/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.number-1}" var="prePageURL" />
             <a href="${prePageURL}">Prev</a>
         </c:if>
         <c:if test="${eventPage.hasNextPage()}">
-            <c:url context="/support/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.number+1}" var="nextPageURL" />
+            <c:url context="${pageContext.request.contextPath}/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.number+1}" var="nextPageURL" />
             <a href="${nextPageURL}">Next</a>
         </c:if>
-        <c:url context="/support/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=0" var="firstPage" />
-        <c:url context="/support/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.totalPages-1}" var="lastPage" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=0" var="firstPage" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/getEventsByOrganizer?organizerId=${param.organizerId}&page=${eventPage.totalPages-1}" var="lastPage" />
     </c:if>
 <c:if test="${param.title == null && param.organizerId == null}">
     <c:if test="${eventPage.hasPreviousPage()}">
-        <c:url context="/support/admin" value="/events?page=${eventPage.number-1}" var="prePageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/events?page=${eventPage.number-1}" var="prePageURL" />
         <a href="${prePageURL}">Prev</a>
     </c:if>
     <c:if test="${eventPage.hasNextPage()}">
-        <c:url context="/support/admin" value="/events?page=${eventPage.number+1}" var="nextPageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/events?page=${eventPage.number+1}" var="nextPageURL" />
         <a href="${nextPageURL}">Next</a>
     </c:if>
-    <c:url context="/support/admin" value="/events?page=0" var="firstPage" />
-    <c:url context="/support/admin" value="/events?page=${eventPage.totalPages-1}" var="lastPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/events?page=0" var="firstPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/events?page=${eventPage.totalPages-1}" var="lastPage" />
 </c:if>
 <c:if test="${param.title!=null || param.startDate!=null || param.endDate!=null}">
     <c:if test="${eventPage.hasPreviousPage()}">
-        <c:url context="/support/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.number-1}" var="prePageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.number-1}" var="prePageURL" />
         <a href="${prePageURL}">Prev</a>
     </c:if>
     <c:if test="${eventPage.hasNextPage()}">
-        <c:url context="/support/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.number+1}" var="nextPageURL" />
+        <c:url context="${pageContext.request.contextPath}/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.number+1}" var="nextPageURL" />
         <a href="${nextPageURL}">Next</a>
     </c:if>
-    <c:url context="/support/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=0" var="firstPage" />
-    <c:url context="/support/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.totalPages-1}" var="lastPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=0" var="firstPage" />
+    <c:url context="${pageContext.request.contextPath}/admin" value="/searchEvent?title=${param.title}&startDate=${param.startDate}&endDate=${param.endDate}&page=${eventPage.totalPages-1}" var="lastPage" />
 </c:if>
 
 <br>

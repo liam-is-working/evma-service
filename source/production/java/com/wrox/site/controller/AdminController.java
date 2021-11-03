@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -140,9 +141,10 @@ public class AdminController {
     }
 
     @RequestMapping(value = "admin/getEventsByOrganizer", method = RequestMethod.GET)
-    public String searchEventByOrg(ModelMap model, @RequestParam Long organizerId,
+    public String searchEventByOrg(ModelMap model, Long organizerId,
                                    @PageableDefault Pageable p){
-
+        if(organizerId==null)
+            organizerId = Long.valueOf(-1);
         model.put("eventPage", eventService.getAllEvents(p, organizerId));
         return "admin/events";
     }

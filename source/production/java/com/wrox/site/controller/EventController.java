@@ -143,6 +143,8 @@ public class EventController {
         if(editedEvent.getStatus().getId() != eventForm.getStatusId())
             updateEventStatus(editedEvent, eventForm.statusId);
 
+        eventForm.organizerNames = eventForm.organizerNames.stream().filter(s -> s.trim().length()!=0).collect(Collectors.toSet());
+
         editedEvent.setOnline(eventForm.online);
         editedEvent.setContent(eventForm.content);
         editedEvent.setSummary(eventForm.summary);

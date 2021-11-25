@@ -68,6 +68,7 @@ public class ProfileController {
         UserProfile profile = profileService.fetchProfile(profileId);
         if(profile == null)
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        //illegal role change
         if(profile.getRole()!=null && !profile.getRole().getAuthority().equals(form.role))
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         //Notify flag
@@ -82,7 +83,7 @@ public class ProfileController {
             orgChangeName = true;
 
         //assign role for new profile
-        if(profile.getRole()!=null && form.role!=null){
+        if(profile.getRole()==null && form.role!=null){
             //hardcoded
             //If update to these roles, account will be unable till admin approves
             if("Event Organizer".equals(form.role) || "Admin".equals(form.role)){

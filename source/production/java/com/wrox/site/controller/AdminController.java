@@ -89,7 +89,7 @@ public class AdminController {
         }
         user = new UserPrincipal();
         user.setUsername(signupFrom.username);
-        user.setEnabled(true);
+        user.setEnabled(false);
         user.setAccountNonLocked(true);
         user.setAccountNonExpired(true);
         user.setCredentialsNonExpired(true);

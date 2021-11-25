@@ -31,23 +31,10 @@ public class UserPrincipalController
     @Inject
     ProfileService profileService;
     @Inject
-    AuthenticationManager authenticationManager;
-    @Inject
     JwtTokenProvider tokenProvider;
     @Inject
     RoleService roleService;
 
-//    @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
-//    public ResponseEntity<Void> changePassword(@RequestParam String newPassword,
-//                                               @AuthenticationPrincipal UserPrincipal userPrincipal){
-//        if(userPrincipal==null)
-//            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-//
-//        userPrincipalService.saveUser(userPrincipal, newPassword, null);
-//        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-//    }
-
-   // @RequestMapping(value = "/signup", method = RequestMethod.POST)
     private void signup( SignupForm signupForm, boolean enable)
     {
         UserPrincipal newUser = new UserPrincipal();
@@ -103,10 +90,16 @@ public class UserPrincipalController
 //    }
 
     @RequestMapping(value = "firebaseToken", method = RequestMethod.GET)
-    public ResponseEntity firebaseToken(@RequestParam String token) throws FirebaseAuthException {
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        String uid = decodedToken.getUid();
-        UserRecord userRecord = FirebaseAuth.getInstance().getUser(uid);
+    public ResponseEntity firebaseToken(@RequestParam String token){
+        UserRecord userRecord;
+        try{
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            String uid = decodedToken.getUid();
+            userRecord = FirebaseAuth.getInstance().getUser(uid);
+        }catch (FirebaseAuthException firebaseAuthException){
+            return new ResponseEntity(HttpStatus.FORBIDDEN);
+        }
+
 
         //authen by GG account only
         if(userRecord.getProviderData().length==0)
@@ -158,144 +151,6 @@ public class UserPrincipalController
         return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
     }
 
-//    @RequestMapping(value = "loginWithGoogleToken", method = RequestMethod.POST)
-//    public ResponseEntity<LoginResponse> loginWithGG(@RequestParam String accessToken){
-//        String url = "https://www.googleapis.com/oauth2/v1/userinfo?" + "access_token=" + accessToken;
-//        RestTemplate template = new RestTemplate();
-//        GGProfile profile = template.getForObject(url, GGProfile.class);
-//
-//        //check if email has been already created
-//        UserPrincipal user;
-//        user = userPrincipalService.loadUserByUsername(profile.email);
-//
-//        if(user==null){
-//            SignupForm signupForm = new SignupForm();
-//            signupForm.setName(profile.name);
-//            signupForm.setEmail(profile.email);
-//            signupForm.setSignUsername(profile.email);
-//            //create new account, set 'enable' to handle different scenarios
-//            signup(signupForm,true);
-//            user = userPrincipalService.loadUserByUsername(profile.email);
-//        }
-//
-//        //failed to create new account
-//        if(user==null)
-//            return new ResponseEntity(null, HttpStatus.EXPECTATION_FAILED);
-//        if(!user.isEnabled()){
-//            LoginResponse response = new LoginResponse();
-//            response.setStatus("Unable");
-//            return new ResponseEntity(response, HttpStatus.OK);
-//        }
-//
-//
-//        Authentication authentication = new PreAuthenticatedAuthenticationToken(user,
-//                null, user.getAuthorities());
-//        authentication.setAuthenticated(true);
-//
-//        // Set thông tin authentication vào Security Context
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//        // Trả về jwt cho người dùng.
-//        String jwt = tokenProvider.generateToken((UserPrincipal) authentication.getPrincipal());
-//        LoginResponse response = new LoginResponse();
-//        response.setStatus("Login success");
-//        response.setToken(jwt);
-//        long userId = ((UserPrincipal) authentication.getPrincipal()).getId();
-//        response.setProfile(profileService.fetchProfile(userId));
-//        return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-//    }
-//
-//    @RequestMapping(value = "GGOAuthEndpoint", method = RequestMethod.GET)
-//    public ResponseEntity googleOAuthEndpoint(@RequestParam(required = false) String code,
-//                                    @RequestBody(required = false) GGResponse GGResponse){
-//        if(code!=null){
-//            RestTemplate template = new RestTemplate();
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-//            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-//            map.add("code",code);
-//            map.add("client_id","28993631450-sinuo1lupftse4tbt8rtsq54hgi0fj0q.apps.googleusercontent.com");
-//            map.add("client_secret","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");
-//            map.add("grant_type","authorization_code");
-//            map.add("redirect_uri","http://localhost:8080/support/api/GGOAuthEndpoint");
-//
-//
-//            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
-//
-//            String url
-//                    = "https://oauth2.googleapis.com/token";
-//            ResponseEntity<GGResponse> accessResponse
-//                    = template.postForEntity(url,entity,GGResponse.class);
-//            String accessToken = accessResponse.getBody().access_token;
-//            //return new ResponseEntity(accessToken, HttpStatus.ACCEPTED);
-//
-//            map.clear();
-//            map.add("access_token",accessToken);
-//
-//            url = "https://www.googleapis.com/oauth2/v1/userinfo?" + "access_token=" + accessToken;
-//            GGProfile profile = template.getForObject(url, GGProfile.class);
-//
-//            //check if email has been already created
-//            UserPrincipal user;
-//            user = userPrincipalService.loadUserByUsername(profile.email);
-//
-//            if(user==null){
-//                SignupForm signupForm = new SignupForm();
-//                signupForm.setName(profile.name);
-//                signupForm.setEmail(profile.email);
-//                signupForm.setSignUsername(profile.email);
-//                //create new account, set 'enable' to handle different scenarios
-//                signup(signupForm,true);
-//                user = userPrincipalService.loadUserByUsername(profile.email);
-//            }
-//
-//            //failed to create new account
-//            if(user==null)
-//                return new ResponseEntity(null, HttpStatus.EXPECTATION_FAILED);
-//            if(!user.isEnabled()){
-//                LoginResponse response = new LoginResponse();
-//                response.setStatus("Unable");
-//                return new ResponseEntity(response, HttpStatus.OK);
-//            }
-//
-//
-//            Authentication authentication = new PreAuthenticatedAuthenticationToken(user,
-//                    null, user.getAuthorities());
-//            authentication.setAuthenticated(true);
-//
-//            // Set thông tin authentication vào Security Context
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//            // Trả về jwt cho người dùng.
-//            String jwt = tokenProvider.generateToken((UserPrincipal) authentication.getPrincipal());
-//            LoginResponse response = new LoginResponse();
-//            response.setStatus("Login success");
-//            response.setToken(jwt);
-//            long userId = ((UserPrincipal) authentication.getPrincipal()).getId();
-//            response.setProfile(profileService.fetchProfile(userId));
-//            return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-//        }else
-//            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @RequestMapping(value = "GGOAuthEndpoint", method = RequestMethod.POST)
-//    public ResponseEntity<GGResponse> getToken(@RequestBody(required = false) GGResponse response){
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
-//
-//    @RequestMapping(value = "loginWithGG", method = RequestMethod.GET)
-//    public ResponseEntity<String> generateLoginLink() {
-//        String url = ("https://accounts.google.com/o/oauth2/v2/auth?"
-//                + "scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email" +
-//                "%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile"
-//                + "&access_type=offline"
-//                + "&include_granted_scopes=true"
-//                + "&response_type=code"
-//                + "&state=state_parameter_passthrough_value"
-//                + "&redirect_uri=http%3A//localhost:8080/support/api/GGOAuthEndpoint"
-//                + "&client_id=28993631450-sinuo1lupftse4tbt8rtsq54hgi0fj0q.apps.googleusercontent.com");
-//        return new ResponseEntity<>(url, HttpStatus.OK);
-//    }
 
     private static class GGProfile{
         public String id;
@@ -474,10 +329,6 @@ public class UserPrincipalController
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(value = "test", method = RequestMethod.GET)
-    public ResponseEntity test(@RequestParam String username){
-        return new ResponseEntity(userPrincipalService.loadUserByUsername(username), HttpStatus.ACCEPTED);
-    }
 
     public static class SignupForm{
         @NotBlank

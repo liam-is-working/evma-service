@@ -11,11 +11,9 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.*;
 
 import static org.springframework.data.jpa.repository.query.QueryUtils.toOrders;
@@ -23,30 +21,6 @@ import static org.springframework.data.jpa.repository.query.QueryUtils.toOrders;
 public class EventRepositoryImpl implements CustomEventRepository{
     @PersistenceContext
     EntityManager entityManager;
-
-    @Override
-    public Page<Event> searchEvent(SearchCriteria criteria, Pageable p) {
-        CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
-
-        CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
-        Root<Event> countRoot = countCriteria.from(Event.class);
-        long total = this.entityManager.createQuery(
-                countCriteria.select(builder.count(countRoot))
-                        .where(toPredicates(criteria, countRoot, builder))
-        ).getSingleResult();
-
-        CriteriaQuery<Event> pageCriteria = builder.createQuery(Event.class);
-        Root<Event> pageRoot = pageCriteria.from(Event.class);
-        List<Event> list = this.entityManager.createQuery(
-                        pageCriteria.select(pageRoot)
-                                .where(toPredicates(criteria, pageRoot, builder))
-                                .orderBy(toOrders(p.getSort(), pageRoot, builder))
-                ).setFirstResult(p.getOffset())
-                .setMaxResults(p.getPageSize())
-                .getResultList();
-
-        return new PageImpl<>(new ArrayList<>(list), p, total);
-    }
 
     @Override
     public Page<Event> searchEvent(String title, Set<Category> categorySet, Set<String> nameSet,
@@ -125,11 +99,6 @@ public class EventRepositoryImpl implements CustomEventRepository{
 
         return new PageImpl<Event>(new ArrayList<>(list), p, 0);
 
-    }
-
-    @Override
-    public Page<Event> getEventByIds(Set<Long> ids) {
-        return null;
     }
 
     private static Predicate[] toPredicates(Collection<Predicate> predicates){

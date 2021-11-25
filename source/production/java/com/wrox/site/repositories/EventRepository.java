@@ -18,5 +18,4 @@ public interface EventRepository extends PagingAndSortingRepository<Event, Long>
      Page<Event> getEventByStatus(EventStatus status, Pageable p);
      Page<Event> getEventByIdInAndStatusIsNot(List<Long> ids, EventStatus status, Pageable p);
      List<Event> getEventByStartDateBetween(Instant below, Instant above);
-
 }

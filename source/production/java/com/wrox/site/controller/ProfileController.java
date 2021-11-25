@@ -2,6 +2,7 @@ package com.wrox.site.controller;
 
 import com.wrox.config.annotation.RestEndpoint;
 import com.wrox.site.entities.Event;
+import com.wrox.site.entities.UserAuthority;
 import com.wrox.site.entities.UserPrincipal;
 import com.wrox.site.entities.UserProfile;
 import com.wrox.site.services.*;
@@ -81,7 +82,7 @@ public class ProfileController {
             //hardcoded
             //If update to these roles, account will be unable till admin approves
             if("Event Organizer".equals(form.role) || "Admin".equals(form.role)){
-                principal.setEnabled(true);
+                principal.setEnabled(false);
                 userPrincipalService.saveUser(principal, null, form.role);
             }else if("Attendees".equals(form.role)){
                 principal.setEnabled(true);

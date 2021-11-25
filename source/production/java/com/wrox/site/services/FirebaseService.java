@@ -54,16 +54,6 @@ public class FirebaseService {
         final Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef = db.collection("Users").document(String.valueOf(userId));
 
-        //Limit number of follow events
-//        if(operation == FollowOperation.FOLLOW_EVENT || operation == FollowOperation.FOLLOW_ORGANIZER){
-//            List<Long> followedEvents = getFollow(userId, Issuer.EVENT);
-//            List<Long> followedOrganizers = getFollow(userId, Issuer.ORGANIZER);
-//            if(operation == FollowOperation.FOLLOW_EVENT && followedEvents!=null &&  followedEvents.size() >= 10)
-//                return "Limit event";
-//            if(operation == FollowOperation.FOLLOW_ORGANIZER && followedOrganizers!=null && followedOrganizers.size() >= 10)
-//                return "Limit organizer";
-//        }
-
         Map<String, Object> update = new Hashtable<>();
         switch (operation){
             case FOLLOW_EVENT:{
